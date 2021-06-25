@@ -84,7 +84,7 @@ This will be 100 separate databases and infrastructure setups, all slightly diff
 The most value you get from a move to microclients, is the removal of al these extra technical components to maintain, 
 and less technical code in the core.
 
-![alt text](dist/img/Microservice vs client.jpg "Microservice vs client")
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Microservice%20vs%20client.jpg "Microservice vs client")
 
 ## Event sourcing
 
