@@ -60,7 +60,7 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 # Core concepts
 ## Microclients
 
-A microclient is what remains of a traditional microservices, once we migrated them to use a messagebroker like Flux-Capacitor.
+A microclient is what remains of a traditional microservices, once we migrated them to use a message service like Flux Capacitor.
 
 Compared to a microservice, a microclient does not need:
 *  A database
@@ -74,8 +74,8 @@ Compared to a microservice, a microclient does not need:
 *  Circuit breakers or retry loops
 
 Every microservice can be turned into a microclient, there is no loss of functionality. 
-The only thing microclients do, is read from and post to a messagebroker like flux-capacitor. 
-Getting messages from A to B, load balancing and persisting is done through the messagebroker with a fraction of the code.
+The only thing microclients do, is read from and post to a message service. 
+Getting messages from A to B, load balancing and persisting is done through the message service with a fraction of the code.
 
 Most companies we have seen, each dev team is responsible for a few up to 10 microservices. 
 A small company with 10 teams will approach 100 separate microservices quick. 
