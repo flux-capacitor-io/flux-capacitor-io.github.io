@@ -62,7 +62,7 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 
 A microclient is what remains of a traditional microservices, once we migrated them to use a message service like Flux Capacitor.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Microservice%20vs%20client%202.jpg "Microservice vs client")
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Microservice%20vs%20client%203.jpg "Microservice vs client")
 
 Compared to a microservice, a microclient does not need:
 *  A database
