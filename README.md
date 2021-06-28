@@ -58,7 +58,58 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 [comment]: <> (The scaling and performance demands increase, core features and structures have to be changed.)
 
 # Core concepts
-## Microclients
+##1. Message routing
+
+Message routing is one of the core feature of Flux Capacitor. It consists of the following:
+
+###1.1 Everything is a message stream
+
+When using Flux Capacitor, the only communication between
+We discern several types of messages:
+
+* Events
+* Commands
+* Queries
+* Notifications
+* Results
+* Errors
+* Schedules
+* Metrics
+
+###1.2 No exposed endpoints
+
+In tradition microservice architectures, services communicate by calling eachothers API endpoints. 
+
+Each service with endpoints needs to have:
+* a highly-available security service to verify that incoming traffic is authenticated
+* load balancers and service registries, to guarantee availability
+* ddos protection, firewall
+
+Each service calling these endpoints needs to have:
+* circuit-breakers and retry-loops in case the calling endpoint is failing or traffic is interrupted
+* stored security credentials
+
+All these things are no longer needed when you communicate through Flux Capacitor.
+
+Flux Capacitor provides one endpoint which services connect to. This is the only endpoint to be secured.
+The other concerns are dealt with too, see the next chapters.
+
+The removal of exposed endpoints saves a lot of overhead per service.
+
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/PullingBetterThanPushing.jpg "Pulling better than pushing")
+
+###1.3 Load balancing 
+
+
+segmenten
+###1.3 Consumer driven
+Index per consumer (3 orderService, inventory service). Een service 2x deployed om te koppelen aan segmenten
+###1.4 Single threaded
+elke tracker eigen thread
+###1.5 "The Flux Capacitor makes time travel possible"
+###1.6 
+
+##1.1 Microclients
 
 A microclient is what remains of a traditional microservices, once we migrated them to use a message service like Flux Capacitor.
 
