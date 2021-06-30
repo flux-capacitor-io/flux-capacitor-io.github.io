@@ -71,15 +71,17 @@ Microservices lose the direct dependency on one another. All communication is in
 When you would normally perform POST or GET API calls to a microservice, you now publish a message to Flux Capacitor that represents this POST or GET.
 The response to this message is a message as well, and published in a similar manner.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/basiccommunication.jpg "Basics")
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/basics1.jpg "Basics")
 
 ### 1.2 Connection simplicity
 
-Because your services only connect with Flux Capacitor, normal microservice setups become much more simple. 
-Your services will still perform the same functionality as before, however a lot of overhead is cut.
-The "how" of sharing data is fully covered by our service and client library, the services only determine "what" needs to be shared.
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/simplicity2.jpg "Connection simplicity")
 
-The simplification of connections removes the need for each service to have:
+Because your services only connect with Flux Capacitor, normal microservice setups become much more simple. 
+Same functionality, a lot less overhead.
+"How" you share data is fully covered by our service and client library, you only need to think of "what" to share.
+
+This way of sharing data also removes the need for:
 * a highly-available security service to verify that incoming traffic is authenticated
 * load balancers and service registries, to guarantee availability
 * ddos protection, firewall
@@ -87,9 +89,9 @@ The simplification of connections removes the need for each service to have:
 
 We are able to fix these concerns once in the place where they belong, in a central service.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/simplicity.jpg "Connection simplicity")
-
 ### 1.3 Load balancing 
+
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Loadbalancer.jpg "Loadbalancing")
 
 We balance load by spreading messages over segments. 
 When you scale a service up to increase processing speed, we automatically rebalance the segments of messages given to each service.
@@ -99,8 +101,6 @@ Most messages are given a semi-random segment to spread load.
 Some message however need to be processed by the exact same service. To get this done, you can specify a custom routing key in the message.
 An example of this are messages related to event-sourcing, where messages about the same aggregate must be processed in the same order (See chapter 2 ).
 Our client library makes these configurations as convenient as possible with simple annotations.
-
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Loadbalancer.jpg "Loadbalancing")
 
 ### 1.3 Consumer driven
 Index per consumer (3 orderService, inventory service). Een service 2x deployed om te koppelen aan segmenten
