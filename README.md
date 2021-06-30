@@ -61,7 +61,7 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 # Core concepts
 ## 1. Message routing
 
-Message routing is one of the core feature of Flux Capacitor. It consists of the following:
+In the following section we will show you how message routing is organised in Flux Capacitor service, and why it is the best way to communicate in software.
 
 ### 1.1 The essence
 
@@ -69,9 +69,71 @@ In its barest essence, Flux Capacitor contains message logs, and services can pu
 
 Microservices lose the direct dependency on one another. All communication is indirect and asynchronous.
 When you would normally perform POST or GET API calls to a microservice, you now publish a message to Flux Capacitor that represents this POST or GET.
-The response to this message is a message as well, and published in a similar manner.
+The response to this message is a message as well, which finds it way back indirect and asynchronous too.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/basics1.jpg "Basics")
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/basics2.jpg "Basics")
+
+### 1.2 Consumers
+
+The messages in Flux Capacitor have to be consumed by your application. We call the individual parts that do this **Consumers**.
+
+The consumers work like this: Each consumer consumes new messages at its own pace. Each consumer has a position, a message in the message log that the consumer consumed last.
+When a consumer receives a new batch of messages, the batch starts at its position. 
+And after the consumer is done processing the batch, it will let us know the new position of the last message it has successfully consumed.
+With this, a consumer consumes all messages only once, and in order.
+
+The beauty of these consumers, is that whether two consumers live in the same application or are separately running applications,
+their behavior and interaction remains exactly the same. In a sense, consumers are small separate applications.
+
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/moveconsumersfreely.jpg "Consumers can be moved freely")
+
+Making a consumer is very easy, here is an example in Java using Spring and our client library:
+
+```
+@Configuration
+@ComponentScan
+public class PetStoreConfig {
+    @Autowired
+    public void configure(FluxCapacitorBuilder builder) {
+        builder.addConsumerConfiguration(ConsumerConfiguration.builder()
+                        .messageType(EVENT)
+                        .name("petstore-consumer")
+                        .handlerFilter(h -> h.getClass().getPackage().getName().startsWith("com.fluxcapacitor.petstore")).build());
+    }
+}
+```
+In plain English: We give the consumer a unique name (petstore-consumer), said which message log we want to consume (events)
+and we point to the **Handlers** that belong to this consumer. More on Handlers next.
+
+[comment]: <> (Two consumers will not process messages in order. One might be faster than the other.)
+[comment]: <> (When a consumer terminates unexpectedly, it will not have updated its position. When the consumer is restarted, it will continue where it left off.)
+[comment]: <> (More on this in the chapter on Load balancing.)
+
+### 1.2 Handlers
+
+Consumers consist of a set of **Handlers**, the smallest unit when working with Flux Capacitor.
+
+When a message is received from Flux Capacitor service, the message is given to all handlers.
+
+Here is an example of a handler for the event "CatReceivedForAdoption", which in some cases will publish a command "SendEmail".
+
+```
+@Component
+public class PetstoreEmailSender {
+    @HandleEvent
+    void handle(CatReceivedForAdoption event) {
+        if(event.isCuteEnough()) {
+            FluxCapacitor.sendCommand(new SendEmailToCustomers(createEmail(event)));
+        }
+    }
+    
+    @HandleEvent
+    void handle(BlackCatReceivedForAdoption event) {
+        // do nothing
+    }
+}
+```
+
 
 ### 1.2 Connection simplicity
 
