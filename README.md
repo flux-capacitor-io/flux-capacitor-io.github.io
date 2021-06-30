@@ -103,7 +103,8 @@ public class PetStoreConfig {
         builder.addConsumerConfiguration(ConsumerConfiguration.builder()
                         .messageType(EVENT)
                         .name("petstore-consumer")
-                        .handlerFilter(h -> h.getClass().getPackage().getName().startsWith("com.fluxcapacitor.petstore")).build());
+                        .handlerFilter(h -> h.getClass().getPackage().getName()
+                            .startsWith("com.fluxcapacitor.petstore")).build());
     }
 }
 ```
