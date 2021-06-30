@@ -57,51 +57,51 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 
 [comment]: <> (The scaling and performance demands increase, core features and structures have to be changed.)
 
+
 # Core concepts
 ## 1. Message routing
 
 Message routing is one of the core feature of Flux Capacitor. It consists of the following:
 
-### 1.1 Everything is a message stream
+### 1.1 The essence
 
-When using Flux Capacitor, the only communication between
-We discern several types of messages:
+In its barest essence, Flux Capacitor contains message logs, and services can publish to or listen to these logs.
 
-* Events
-* Commands
-* Queries
-* Notifications
-* Results
-* Errors
-* Schedules
-* Metrics
+Microservices lose the direct dependency on one another. All communication is indirect and asynchronous.
+When you would normally perform POST or GET API calls to a microservice, you now publish a message to Flux Capacitor that represents this POST or GET.
+The response to this message is a message as well, and published in a similar manner.
 
-### 1.2 No exposed endpoints
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/basiccommunication.jpg "Basics")
 
-In tradition microservice architectures, services communicate by calling eachothers API endpoints. 
+### 1.2 Connection simplicity
 
-Each service with endpoints needs to have:
+Because your services only connect with Flux Capacitor, normal microservice setups become much more simple. 
+Your services will still perform the same functionality as before, however a lot of overhead is cut.
+The "how" of sharing data is fully covered by our service and client library, the services only determine "what" needs to be shared.
+
+The simplification of connections removes the need for each service to have:
 * a highly-available security service to verify that incoming traffic is authenticated
 * load balancers and service registries, to guarantee availability
 * ddos protection, firewall
+* circuit-breakers and retry-mechanisms
 
-Each service calling these endpoints needs to have:
-* circuit-breakers and retry-loops in case the calling endpoint is failing or traffic is interrupted
-* stored security credentials
+We are able to fix these concerns once in the place where they belong, in a central service.
 
-All these things are no longer needed when you communicate through Flux Capacitor.
-
-Flux Capacitor provides one endpoint which services connect to. This is the only endpoint to be secured.
-The other concerns are dealt with too, see the next chapters.
-
-The removal of exposed endpoints saves a lot of overhead per service.
-
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/PullingBetterThanPushing.jpg "Pulling better than pushing")
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/simplicity.jpg "Connection simplicity")
 
 ### 1.3 Load balancing 
 
+We balance load by spreading messages over segments. 
+When you scale a service up to increase processing speed, we automatically rebalance the segments of messages given to each service.
+Rebalancing is done asynchronous when a service is asking for a next batch of messages.
 
-segmenten
+Most messages are given a semi-random segment to spread load. 
+Some message however need to be processed by the exact same service. To get this done, you can specify a custom routing key in the message.
+An example of this are messages related to event-sourcing, where messages about the same aggregate must be processed in the same order (See chapter 2 ).
+Our client library makes these configurations as convenient as possible with simple annotations.
+
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Loadbalancer.jpg "Loadbalancing")
+
 ### 1.3 Consumer driven
 Index per consumer (3 orderService, inventory service). Een service 2x deployed om te koppelen aan segmenten
 ### 1.4 Single threaded
