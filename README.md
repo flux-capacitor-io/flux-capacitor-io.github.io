@@ -75,19 +75,24 @@ The response to this message is a message as well, which finds it way back indir
 
 ### 1.2 Consumers
 
-The messages in Flux Capacitor have to be consumed by your application. We call the individual parts that do this **Consumers**.
+Messages are sent to Flux Capacitor and parts of your application consume/process these messages. 
+We call the individual parts that do this **Consumers**.
 
-The consumers work like this: Each consumer consumes new messages at its own pace. Each consumer has a position, a message in the message log that the consumer consumed last.
-When a consumer receives a new batch of messages, the batch starts at its position. 
-And after the consumer is done processing the batch, it will let us know the new position of the last message it has successfully consumed.
-With this, a consumer consumes all messages only once, and in order.
+Each message log can have infinite consumers listening to the log. 
+Each consumer consumes new messages at its own pace.
+Two consumers will not process messages in order. One might be faster than the other.
+
+For each consumer we store the position of the last message it has consumed.
+When a consumer receives a new batch of messages, the batch starts at this position. 
+When the consumer is done processing the batch, it will let us know the new position of the last message it has successfully consumed.
+With this mechanism, we guarantee a consumer consumes all messages only once, and in order.
 
 The beauty of these consumers, is that whether two consumers live in the same application or are separately running applications,
 their behavior and interaction remains exactly the same. In a sense, consumers are small separate applications.
 
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/moveconsumersfreely.jpg "Consumers can be moved freely")
 
-Making a consumer is very easy, here is an example in Java using Spring and our client library:
+Making a consumer is easy, here is an example in Java using Spring and our client library:
 
 ```
 @Configuration
