@@ -254,7 +254,7 @@ application at any point in time by replaying those events? Well yes: that's exa
 
 Here's a chain of events for a given webshop order:
 
-<img src="/assets/Event%20sourcing.jpg" alt="Event sourcing" title="Event sourcing" />
+<img src="https://flux-capacitor.io/assets/Event%20sourcing.jpg" alt="Event sourcing" title="Event sourcing" />
 
 After the dust has settled it almost appears like nothing happened: the customer paid but got refunded, the shipped item
 is back in inventory, and the webshop got paid but later reimbursed the customer. In reality a lot did happen, but it's
@@ -263,9 +263,9 @@ hard to squeeze this entire timeline into a database that only keeps track of th
 To fetch the order using event sourcing you would load these events and apply them one by one to recreate the order,
 i.e: no need to store the order in a database. Event sourcing offers a lot of advantages compared to the traditional way
 of storing data. For more in-depth explanations please refer to
-[these](https://martinfowler.com/eaaDev/EventSourcing.html)
-[excellent](https://docs.microsoft.com/en-us/azure/architecture/patterns/event-sourcing)
-[articles](https://www.eventstore.com/blog/what-is-event-sourcing).
+<a href="https://martinfowler.com/eaaDev/EventSourcing.html" target="_blank">these</a>
+<a href="https://docs.microsoft.com/en-us/azure/architecture/patterns/event-sourcing" target="_blank">excellent</a>
+<a href="https://www.eventstore.com/blog/what-is-event-sourcing" target="_blank">articles</a>.
 
 ### Event sourcing in Flux Capacitor
 
