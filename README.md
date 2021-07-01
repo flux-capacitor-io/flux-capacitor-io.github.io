@@ -3,9 +3,8 @@
 </a>
 
 
-Flux Capacitor service
+Flux Capacitor
 ======================
-
 Flux Capacitor is a service that tackles one of the biggest problems in today's microservice jungle:
 how to let your services communicate reliably and easily without the need for complex infrastructure like message queues,
 service registries, api gateways etc.
@@ -32,9 +31,40 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 * _Application metrics:_ you can trace the performance of all connected services from one place.
 * _Kick-ass performance:_ you can publish and read at speeds well over millions of messages per second.
 
+
+[comment]: <> (As the demand for more advanced software has kept growing, so has its complexity. At first this complexity was mainly)
+
+[comment]: <> (felt at the application level. To combat this, developers transitioned from monolith to microservices. However, this)
+
+[comment]: <> (just meant that much of the complexity shifted from the application to the infrastructure layer. As each microservice)
+
+[comment]: <> (typically requires load balancing, a security layer, a data store, and so on, lots of infrastructure typically gets)
+
+[comment]: <> (duplicated. Moreover, each request needs to find its way to the right microservice. This has led to the invention of)
+
+[comment]: <> (service registries, api gateways and more advanced message queues, to name just a few.)
+
+[comment]: <> (Needless to say, all of this has not helped to make software development easier. Developers today need to be well-versed)
+
+[comment]: <> (in the development and maintenance of both software and the underlying infrastructure. However, on a more positive note,)
+
+[comment]: <> (the actual demands on the infrastructure don't seem to be that many. In short, this is what we would want our infra)
+
+[comment]: <> (layer to handle for us:)
+
+[comment]: <> (* Message routing to and from services)
+
+[comment]: <> (* Load balance messages to our service instances)
+
+[comment]: <> (* Allow services to dynamically scale up and down)
+
+[comment]: <> (* Data persistence &#40;mostly key-based, event-sourcing, or for search&#41;)
+
+[comment]: <> (Obviously, we need all of this . )
+
+[comment]: <> (evolves has evolved the need)
+
 # Overview
-
-
 
 # Why this product exists
 
@@ -59,6 +89,7 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 
 
 # Core concepts
+
 ## 1. Message routing
 
 In the following section we will show you how message routing is organised in Flux Capacitor service, and why it is the best way to communicate in software.
@@ -153,11 +184,13 @@ This way of sharing data also removes the need for:
 * a highly-available security service to verify that incoming traffic is authenticated
 * load balancers and service registries, to guarantee availability
 * ddos protection, firewall
+
+
 * circuit-breakers and retry-mechanisms
 
 We are able to fix these concerns once in the place where they belong, in a central service.
 
-### 1.3 Load balancing 
+### 1.3 Load balancing
 
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Loadbalancer.jpg "Loadbalancing")
 
@@ -169,45 +202,114 @@ Most messages are given a semi-random segment to spread load.
 Some message however need to be processed by the exact same service. To get this done, you can specify a custom routing key in the message.
 An example of this are messages related to event-sourcing, where messages about the same aggregate must be processed in the same order (See chapter 2 ).
 Our client library makes these configurations as convenient as possible with simple annotations.
-
 ### 1.3 Consumer driven
+
 Index per consumer (3 orderService, inventory service). Een service 2x deployed om te koppelen aan segmenten
+
 ### 1.4 Single threaded
+
 elke tracker eigen thread
+
 ### 1.5 "The Flux Capacitor makes time travel possible"
-### 1.6 
 
-##1.1 Microclients
+### 1.6
 
-A microclient is what remains of a traditional microservices, once we migrated them to use a message service like Flux Capacitor.
+## 1.1 Microclients
+
+A microclient is what remains of a traditional microservices, once we migrated them to use a message service like Flux
+Capacitor.
 
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Microservice%20vs%20client.jpg "Microservice vs client")
 
 Compared to a microservice, a microclient does not need:
-*  A database
-*  Mapping to a database format   
-*  Load balancing
-*  Api gateways
-*  Service registries
-*  Endpoints
-*  Security checks
-*  Direct connections to other services
-*  Circuit breakers or retry loops
 
-Every microservice can be turned into a microclient, there is no loss of functionality. 
-The only thing microclients do, is read from and post to a message service. 
-Getting messages from A to B, load balancing and persisting is done through the message service with a fraction of the code.
+* A database
+* Mapping to a database format
+* Load balancing
+* Api gateways
+* Service registries
+* Endpoints
+* Security checks
+* Direct connections to other services
+* Circuit breakers or retry loops
 
-Most companies we have seen, each dev team is responsible for a few up to 10 microservices. 
-A small company with 10 teams will approach 100 separate microservices quick. 
-This will be 100 separate databases and infrastructure setups, all slightly different, all made by slightly different teams at slightly different times.
+Every microservice can be turned into a microclient, there is no loss of functionality. The only thing microclients do,
+is read from and post to a message service. Getting messages from A to B, load balancing and persisting is done through
+the message service with a fraction of the code.
 
-The most value you get from a move to microclients, is the removal of al these extra technical components to maintain, 
+Most companies we have seen, each dev team is responsible for a few up to 10 microservices. A small company with 10
+teams will approach 100 separate microservices quick. This will be 100 separate databases and infrastructure setups, all
+slightly different, all made by slightly different teams at slightly different times.
+
+The most value you get from a move to microclients, is the removal of al these extra technical components to maintain,
 and less technical code in the core.
-
 
 ## Event sourcing
 
-## Microfunctions
+Most applications use a database to keep track of the latest state of the application. Getting to that latest state
+probably involved lots of tiny updates, e.g: a user signed up, an order got shipped, a complaint was filed, and so on.
 
-Eventually we might be able to have you upload only your microfunctions, without even a need for a runnable microclient
+What if we simply stored all these changes as events? Wouldn't we then be able to reconstruct the state of the
+application at any point in time by replaying those events? Well yes: that's exactly the idea behind event sourcing.
+
+Here's a chain of events for a given webshop order:
+
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Event%20sourcing.jpg "Event sourcing")
+
+After the dust has settled it almost appears like nothing happened: the customer paid but got refunded, the shipped item
+is back in inventory, and the webshop got paid but later reimbursed the customer. In reality a lot did happen, but it's
+hard to squeeze this entire timeline into a database that only keeps track of the current state.
+
+To fetch the order using event sourcing you would load these events and apply them one by one to recreate the order,
+i.e: no need to store the order in a database. Event sourcing offers a lot of advantages compared to the traditional way
+of storing data. For more in-depth explanations please refer to
+[these](https://martinfowler.com/eaaDev/EventSourcing.html)
+[excellent](https://docs.microsoft.com/en-us/azure/architecture/patterns/event-sourcing)
+[articles](https://www.eventstore.com/blog/what-is-event-sourcing).
+
+### Event sourcing in Flux Capacitor
+
+Flux Capacitor doesn't force you to use event sourcing in any way. It simply makes it easy for you if you do. Here's how
+you can load an event sourced entity (or aggregate) using our Java client:
+
+```java
+class OrderCommandHandler {
+    @HandleCommand
+    void handle(ShipOrder command) {
+        FluxCapacitor.loadAggregate(command.getOrderId(), Order.class) //load the order entity
+                .apply(new OrderShipped(...)); //apply a new event
+    }
+}
+```
+
+In this example we ask the Flux Capacitor client to load an order entity when a handler receives a command to ship an
+order. We then apply a new event to this entity, called OrderShipped. That event will be appended to the event log of
+the order entity. The next time the order is event sourced the new event will be returned as well. Flux Capacitor will
+also add the event to the *global* event log, so any event consumers will be able to handle this event as well.
+
+How does the Flux Capacitor client know how to apply the OrderShipped event on the Order? Also this part is very easy:
+
+```java
+
+@Aggregate
+class Order {
+    String orderId;
+    OrderDetails details;
+    boolean shipped;
+    ...
+
+    @ApplyEvent
+    Order handle(OrderShipped event) {
+        return this.toBuilder().shipped(true).build;
+    }
+    
+    ...
+}
+```
+
+As you see we leave all the business logic up to you. We only tackle generic technical challenges like event sourcing,
+so you can focus on what's actually important in your business.
+
+What if you don't to event source this entity? That's easy too: just change `@Aggregate`
+to `@Aggregate(eventSourced=false)` and we'll automatically store the latest state of the entity in Flux's key value
+store. Boom! 
