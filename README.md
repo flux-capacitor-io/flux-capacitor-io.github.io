@@ -254,7 +254,7 @@ application at any point in time by replaying those events? Well yes: that's exa
 
 Here's a chain of events for a given webshop order:
 
-<img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Event%20sourcing.jpg" alt="Event sourcing" title="Event sourcing" />
+<img src="/assets/Event%20sourcing.jpg" alt="Event sourcing" title="Event sourcing" />
 
 After the dust has settled it almost appears like nothing happened: the customer paid but got refunded, the shipped item
 is back in inventory, and the webshop got paid but later reimbursed the customer. In reality a lot did happen, but it's
