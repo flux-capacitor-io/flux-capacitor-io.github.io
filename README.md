@@ -103,9 +103,9 @@ An application would simply post a question into the world, and receive the answ
 without having any technical dependency on the other applications. 
 The only thing your application needs to know is "what" question can be asked.
 It would not known anything about "how" the question ends up in the right place, or "how" the answer is linked back to the application. 
-That is what we achieve with Flux Capacitor.
+That is something that we support with Flux Capacitor.
 
-We provide your applications a single endpoint, where they can post messages and can track messages. More on tracking in the next section.
+We provide your applications a single endpoint, where they can post messages and can track messages.
 
 If you need to ask a question to a another application, you will be able to achieve it with for example this Java code:
 ```java
@@ -139,7 +139,7 @@ Tracking is superior to pushing messages or queues. It works like this:
 * Your application sends us back the index of the **last message it processed**.
 
 When there are no messages waiting, your connection will hold until we receive a new message, and instantly send the message to you.
-When there are lots of messages waiting, you will immediately a batch with a size of your own choosing.
+When there are lots of messages waiting, you will immediately get a batch with a size of your own choosing.
 
 The request-response interaction with tracking looks like this:
 
@@ -151,19 +151,27 @@ It is on-demand messaging, your application is in control of what it receives.
 
 Also it is not possible to lose a message. With queues, messages often disappear once read, 
 or there are certain irritating limitations set for how long a read message is available.
+
 Suppose your application crashes during processing using tracking. 
+Your application was still processing, so did not send a new position or index to us.
 Once your application has rebooted, you will receive the messages again that it was processing. 
 We keep an index for where your application was, and you start there, where you left off.
+If you were running multiple nodes, we can easily shift the messages to your other nodes. 
+More on that in the chapter about **Load balancing**.
 
 ### Flux Capacitor makes time travel possible
 
 The crème de la crème of our tracking, is that you can go back in time. Great scot!
 
-Suppose you are creating a new application, and you processed a whole bunch of messages wrongly, 
-your reset your tracking to any point in time in the past and reprocess the messages. 
+You can reset a tracker to any previous point in time. 
+When you add a new tracker, you can tell us to start tracking from the beginning of time.
+
+Suppose you are creating a new application, and created a bug that made you process a whole bunch of messages wrongly.
+You deploy your fix, and then simply reset your tracker to the moment you deployed the bug.
 This has often been our saving grace during new projects.
 
-Another benefit is that you can wait with certain secondary features, like billing customers based on usage. You will always be able to use your old data.
+Another benefit is that you can wait with certain secondary features, like billing customers based on usage. 
+You will always be able to use your old data.
 
 
 [comment]: <> (```java)
@@ -182,8 +190,8 @@ Another benefit is that you can wait with certain secondary features, like billi
 
 The parts of your application that processes messages are called **Consumers**.
 A consumer consists of:
-* The specific message type it consumes (e.g. queries)
-* The set of handlers that belong to this consumer.
+* A filter of the types of messages it consumes (e.g. only events, or all queries called "GetOrders")
+* A filter of handlers that belong to this consumer (e.g. all handlers in this package, or only handler methods called X)
 
 Each consumer is tracking separately.
 Within the same application, you can have multiple separate consumers that track messages at completely different speeds.
@@ -194,12 +202,15 @@ their behavior and interaction remains exactly the same. In a sense, consumers a
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/moveconsumersfreely.jpg "Consumers can be moved freely")
 
 With separate consumers, you can divide parts of your application that do not really belong together, before you even moved them to a separate application.
+
 Suppose you have a shop application, with orders and deliveries, and your billing department needs you to count all orders for specific categories of things.
 You don't want that code influencing your core code.
 With a separate consumer, you can build the billing part as if it is completely separate.
 
-More often than not in applications, programmers will link separate concerns directly that should never be linked at all.
-These are often called **cross-cutting concerns**.
+More often than not, programmers will link separate concerns directly that should never be linked at all.
+Some concern will touch every part of your core code if it is not easy to create separate consumers. 
+These are called **cross-cutting concerns**. 
+[More on that here.](https://en.wikipedia.org/wiki/Cross-cutting_concern#:~:text=Cross%2Dcutting%20concerns%20are%20parts,oriented%20programming%20or%20procedural%20programming.)
 
 We have made this process quite easy, here is an example in Java using Spring and our client library:
 
@@ -217,8 +228,6 @@ class Config {
     }
 }
 ```
-The handler filter is a flexible way of linking handlers to different consumers.
-What we often do, is separate our projects into modules, and give each module a separate consumer.
 
 ### 1.5 Message Functions
 
