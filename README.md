@@ -222,12 +222,13 @@ Suppose you have a shop application, with orders and deliveries, and your billin
 orders for specific categories of things. You don't want that code influencing your core code. With a separate consumer,
 you can build the billing part as if it is completely separate.
 
-More often than not, programmers will link separate concerns directly that should never be linked at all. Some concern
-will touch every part of your core code if it is not easy to create separate consumers. These are called **cross-cutting
-concerns**.
-[More on that here.](https://en.wikipedia.org/wiki/Cross-cutting_concern#:~:text=Cross%2Dcutting%20concerns%20are%20parts,oriented%20programming%20or%20procedural%20programming.)
+More often than not, programmers will link separate concerns directly that should never be linked at all. Some concerns
+could touch every part of your core code. These are called **cross-cutting
+concerns**, 
+[more on this here.](https://en.wikipedia.org/wiki/Cross-cutting_concern#:~:text=Cross%2Dcutting%20concerns%20are%20parts,oriented%20programming%20or%20procedural%20programming.)
+With a separate consumer, you can easily listen to a whole bunch of messages separately, and often remove these cross-cutting concerns from the core code.
 
-We have made this process quite easy, here is an example in Java using Spring and our client library:
+Creating a consumer quite easy, here is an example in Java using Spring and our client library:
 
 ``` java
 @Configuration
@@ -244,13 +245,51 @@ class Config {
 }
 ```
 
-### 1.5 Message Functions
+### 1.4 Load balancing
+
+A must for communication between services is high availability. 
+
+With API communication this is often done by running multiple nodes of a service, and having incoming traffic 
+distributed over these nodes. 
+The load is distributed by passing all traffic through an API gateway, where a load balancer divides the traffic between nodes.
+
+With our asynchronous setup, we give you load balancing by default, without requiring any infrastructure like load balancers.
+Load is automatically balanced between consumers **with the same name**. 
+
+The load balancing works with message **Segments**. 
+Messages are divided across a set of segments (right now 1024 segments).
+When two consumers with the same name are tracking Flux Capacitor, segments are divided 50-50.
+Consumers only get messages from their assigned segments, and consumers only update positions on their assigned segments.
+
+When you place a new node, for instance to deploy a new release, the consumers in the service will often start tracking with none of the segments.
+Once one of the other consumers is done processing, it will get a smaller piece of the segments, to make room for the new node.
+When you remove a node, an message is sent to Flux Capacitor to disconnect the consumers, releasing those segments for other consumers to pick up.
+When a node fatally crashed, we automatically release the segments after a certain time.
+
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Loadbalancer.jpg "Loadbalancing")
+
+Messages are given random segments by default based on a message id. 
+But you can set a **Routing key** (@RoutingKey in our client library) to base the segments on your data in the message. 
+Two messages with the same routing key will be in the same segment, and thus be processed in the same consumer. 
+Therefore, messages with the same routing key are always processed in order. 
+
+Messages in order are very useful for **event-sourcing**, since we guarantee we are not out of order, and thus are working with the latest situation. 
+Also, we were able to create efficient local caching for aggregate in our client library. For more see the next chapter.
+
+For instance for event-sourcing (see next chapter) it is useful if all events are always written in order, and there is no risk of .
+
+### 1.5 Single threaded
+
+Every consumer is given a single thread by default.
+
+
+### 1.6 Message Functions
 
 * Queries: Processed once, returns result or error
 * Commands: Processed once, returns result or error, can lead to events (see event-sourcing chapter)
 * Events: Processed many times
 
-### 1.6 Handlers are strong
+### 1.7 Message Handlers
 
 We already talked a bit about Handlers, but some of their possibilities are important to know.
 
@@ -273,11 +312,6 @@ public class PetstoreEmailSender {
 }
 ```
 
-### 1.7 Load balancing
-
-Index per consumer (3 orderService, inventory service). Een service 2x deployed om te koppelen aan segmenten
-
-### 1.8 Single threaded
 
 ## 2. Event sourcing
 
