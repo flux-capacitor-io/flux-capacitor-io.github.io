@@ -151,7 +151,9 @@ other nodes. [More on that in the chapter about load balancing](#load-balancing)
 
 #### Flux Capacitor makes time travel possible
 
-you can go back in time with trackers. Great scot!
+You can go back in time with trackers. 
+
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Great%20Scott.jpg "Great scott!")
 
 You can reset a tracker to any previous point in time. Or when you add a new tracker, you can tell us to start tracking
 from the beginning of time.
@@ -297,7 +299,7 @@ the handler annotation ```@HandleResult```.
 
 An uncaught exception within for instance a query or command handler, is automatically published as an error. Errors are
 thrown in the calling method, but can also be handled like any other message with the handler
-annotation ```@HandleError```.
+annotation ```@HandleError```. For a real example, check TransferEventHandler in our bank example.
 
 #### Notifications
 
