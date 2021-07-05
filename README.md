@@ -62,31 +62,33 @@ a second instance; Flux Capacitor will automatically balance the request load.
 
 ### Commands and Queries
 
-Most applications communicate by sending API calls to each other. Applications can send a query and get an answer back
-by doing a GET call, for instance "Give me all shipped products". Applications can also send a command to do something
-and get back whether it succeeded, for instance "Add a new order", "Delete an order". These queries and commands are the
-main body of communication between services.
+Most applications communicate by sending API calls to each other. The majority of these calls are either queries or
+commands. A query is a request for information, like: "Give me all orders that shipped in the last month". In web APIs a
+query is typically performed via a GET request. A command is a request for the application to do something, for
+instance "Place a new order", "Delete an order". In web APIs these are usually the POST, PUT and DELETE requests.
 
-Direct communication, like API calls, does not scale well for rapidly-changing applications with high performance
-demands. For robustness, you for instance need to balance load across multiple service instances, you have to set up api
-gateways and load balancers to reroute these direct calls. And service registries are needed to tell you which services
-are available to be routed to. Besides this infrastructure, you also have direct exposed endpoints, which need to be
-secured with even more infrastructure, like a firewall, DDoS protection, some authentication mechanism, etc. You would
-have to hire some cloud infrastructure engineers to deal with all these concerns before being able to launch your
+Web API calls and other forms of direct communication, do not scale well for rapidly-changing applications with high
+performance demands. For high availability and scalability, services are typically deployed more than once. A load
+balancer is used to balance load and handle failover. Proxies and things like a content delivery network or api gateway
+is often used to route or modify specific API requests. As the numbers of endpoints grow you'll also need something like
+a service registry. Besides all this infrastructure, you'll also have directly exposed endpoints, which need to be
+secured with even more infrastructure, like a firewall, DDoS protection, some authentication mechanism, etc. You will
+need a dedicated team of cloud engineers to deal with all these concerns before you are even ready to launch your
 product.
 
-What if you could send queries and commands completely indirect, and without exposed endpoint? The above mentioned
-infrastructure would not be needed. An application would simply post a query into a single place, and receive the answer
-from that place, without having any technical dependency on any of the applications that answered. It would not known
-anything about "how" the question ends up in the right place, or "how" the answer is linked back to the application. The
-only thing your application would need to know is "what" question can be answered. Queries and commands between
-applications would be as easy as within the application.
+All this additional infrastructure is the result of the fact that queries and commands are being pushed to your
+services. What if we would turn this around? What if your services would pull in their queries and commands from a and
+handle them at their own pace? That simple change would render all the mentioned infrastructure obsolete. Moreover, we
+would break the link between the producer of a request and its responder. The producer does not need to know anything
+about the consumer (location transparency) and vice versa. The only thing your application needs to know is what queries
+or commands it wants to handle. Passing requests to another application would become just as easy as passing it to a
+class within your application.
 
-With Flux Capacitor we have created this indirect, endpointless way for your services to communicate. We provide your
-applications a single endpoint, where your services can post messages and can track messages.
+With Flux Capacitor this indirect form of communication based on pull instead of push is made very easy. We provide your
+applications a single endpoint, to which your services can both publish and subscribe various types of messages.
 
-If you need to ask a question to another application (or to yourself), you will be able to achieve it with for example
-this Java code:
+For instance, if you need to ask a question to another application (or your own), you will be able to do it with this
+single line of code:
 
 [comment]: <> (@formatter:off)
 
@@ -94,29 +96,32 @@ this Java code:
 List<Order> orders = FluxCapacitor.queryAndWait(new GetOrders(...));
 ```
 
-Or if you want to post something, telling an application to do something:
+Note: examples here are in Java, but Flux Capacitor does not care what language your applications are written
+in of course.
+
+To send a command you can simply do:
 
 ```java
-FluxCapacitor.sendCommandAndWait(new AddOrder(...));
+FluxCapacitor.sendCommand(new PlaceOrder(...));
 ```
 
-The results of your action will be returned to you, as if you called a method directly! An error would be thrown the
-same as well. Whether the question is director indirect, the interface for your application to "ask" remains the same.
+The results of your action will be returned to you, so it would be just as if you invoked a method within your
+application! And if your action causes an exception somewhere the exception will be thrown to you as well.
 
-If you want to handle a request, you will create a **Handler**, which is a function that takes a request as input, and
-gives a result as output. For instance:
+To handle a request, all you need to do is add a **Handler**, which is a function that takes a request as input, and gives
+a result as output. For instance:
 
 ```java
 @HandleQuery
-List<Order> handle(GetOrders query){
+List<Order> handle(GetOrders query) {
     return...;
 }
 ```
 
 [comment]: <> (@formatter:on)
 
-You still need to create the business specific behavior your application needs to perform, but all the technicalities of
-connecting the right requester with the right responder are no longer your problem.
+As you see you will still need to implement all the behavior that's specific to your business, but all the
+technicalities of connecting services are no longer your concern.
 
 ### Tracking
 
@@ -457,7 +462,7 @@ class OrderFeedbackHandler {
     @HandleEvent
     void handle(ShipOrder event) {
         FluxCapacitor.scheduler().schedule("OrderFeedback-" + event.getOrderId(), Duration.ofDays(2),
-                new AskForFeedback(...));
+                                           new AskForFeedback(...));
     }
 
     @HandleSchedule
@@ -495,14 +500,16 @@ An example from our [example bank project, check it out to see the test speed an
 ```java
 class BankAccountTest {
     private static final CreateAccount createAccount = CreateAccount.builder().accountId("a").userId("user1").build();
-    private static final CreateAccount createAnotherAccount = CreateAccount.builder().accountId("b").userId("user2").build();
+    private static final CreateAccount createAnotherAccount =
+            CreateAccount.builder().accountId("b").userId("user2").build();
     private static final TransferMoney transferMoney = new TransferMoney("a", "b", BigDecimal.TEN);
     private final TestFixture testFixture = TestFixture.create(new AccountCommandHandler(), new TransferEventHandler(),
-            new AccountLifecycleHandler());
+                                                               new AccountLifecycleHandler());
 
     @Test
     void testCreateAccountTwiceNotAllowed() {
-        testFixture.givenCommands(createAccount).whenCommand(createAccount).expectException(IllegalCommandException.class);
+        testFixture.givenCommands(createAccount).whenCommand(createAccount)
+                .expectException(IllegalCommandException.class);
     }
 
     @Test
