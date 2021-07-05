@@ -2,71 +2,10 @@
     <img src="https://flux-capacitor.io/assets/brand/flux-capacitor-white.svg" alt="Flux Capacitor logo" title="Flux Capacitor" align="right" height="60" />
 </a>
 
-
-Flux Capacitor
-======================
-Flux Capacitor is a service that tackles one of the biggest problems in today's microservice jungle:
-how to let your services communicate reliably and easily without the need for complex infrastructure like message
-queues, service registries, api gateways etc.
-
-Once your apps have connected to Flux Capacitor they can publish and subscribe to messages. Messages come in different
-flavors:
-
-* Queries: stuff you want to ask, e.g. get me a user profile
-* Commands: stuff you want to do, e.g. update a password
-* Events: stuff you want to announce, e.g. an email address was changed
-
-Because your apps connect to Flux Capacitor and not to each other it is super easy to add, remove or modify services.
-And if a service is getting too busy it is trivial to scale the number of service instances: Flux Capacitor
-automatically takes care of the load balancing between instances. All you need to do is deploy and run your instances.
-
-Aside from routing messages between applications, Flux Capacitor also does the following:
-
-* _Event sourcing:_ published events about your domain models end up in their own event log. To rebuild a domain model
-  simply replay its events; no need to store your model in a database.
-* _Search:_ index anything you want to search for later; no dedicated search engine necessary.
-* _Auditing:_ all messages get stored in message logs by design. This makes it easy to see exactly what happened in your
-  application, from events to queries and even errors: everything is available.
-* _Scheduling:_ aside from sending messages immediately you can also schedule messages for the future.
-* _Application metrics:_ you can trace the performance of all connected services from one place.
-* _Kick-ass performance:_ you can publish and read at speeds well over millions of messages per second.
-
-[comment]: <> (As the demand for more advanced software has kept growing, so has its complexity. At first this complexity was mainly)
-
-[comment]: <> (felt at the application level. To combat this, developers transitioned from monolith to microservices. However, this)
-
-[comment]: <> (just meant that much of the complexity shifted from the application to the infrastructure layer. As each microservice)
-
-[comment]: <> (typically requires load balancing, a security layer, a data store, and so on, lots of infrastructure typically gets)
-
-[comment]: <> (duplicated. Moreover, each request needs to find its way to the right microservice. This has led to the invention of)
-
-[comment]: <> (service registries, api gateways and more advanced message queues, to name just a few.)
-
-[comment]: <> (Needless to say, all of this has not helped to make software development easier. Developers today need to be well-versed)
-
-[comment]: <> (in the development and maintenance of both software and the underlying infrastructure. However, on a more positive note,)
-
-[comment]: <> (the actual demands on the infrastructure don't seem to be that many. In short, this is what we would want our infra)
-
-[comment]: <> (layer to handle for us:)
-
-[comment]: <> (* Message routing to and from services)
-
-[comment]: <> (* Load balance messages to our service instances)
-
-[comment]: <> (* Allow services to dynamically scale up and down)
-
-[comment]: <> (* Data persistence &#40;mostly key-based, event-sourcing, or for search&#41;)
-
-[comment]: <> (Obviously, we need all of this . )
-
-[comment]: <> (evolves has evolved the need)
-
 # Table of contents
 
 - [Flux Capacitor](#flux-capacitor)
-- [Overview](#overview)
+- [Messaging as a Service](#messaging-as-a-service)
 - [Why this product exists](#why-this-product-exists)
 - [Core concepts](#core-concepts)
     * [Message routing](#message-routing)
@@ -90,28 +29,31 @@ Aside from routing messages between applications, Flux Capacitor also does the f
         + [Upcasting](#upcasting)
     * [Scheduling messages](#scheduling-messages)
 
-# Overview
+# Flux Capacitor
 
-# Why this product exists
+Building software is great. You can literally create something out of nothing and change the world.
 
-[comment]: <> (-- even in de vrieskast)
+Some ideas can be realised very quickly too. If your idea needs a website and basic webshop, you could be up and running
+in a day. But if your needs are a little more demanding, the time required to launch a new product, feature or even bug
+fix tends to be significant. Most of that time is not spent on problems unique to your company. In fact, most companies
+struggle with the exact same technical problems.
 
-[comment]: <> (Building software must be the greatest job in the world. You can be very creative when coding. )
+We believe it doesn’t have to be this way. At Flux Capacitor we take on some of the biggest challenges plaguing
+architects and developers today so you don't have to. This way, you can focus on the actual challenges in your domain
+and launch your idea in a month instead of a year. We believe in solving problems at their roots, not by remedying their
+symptoms.
 
-[comment]: <> (And when you make a great design, you can have a big impact on a large number of people, )
+# Messaging as a Service
 
-[comment]: <> (more impact than you can have with most other work. )
+So what problems do we tackle? Well, our biggest objective is to make it easy, fast and reliable for your services to
+communicate with each other and the outside world. We don't want you to worry about building the next microservice
+platform like so many companies have before you, just so you can launch your next big thing.
 
-
-[comment]: <> (Most enjoyable are permanent solutions. For example the Jackson library for Java, )
-
-[comment]: <> (which does it job so well, we never have to worry about mapping JSON to Java and back.)
-
-[comment]: <> (When coding yourself, most effort goes to solving problems as permanent as possible, which allows you to  )
-
-[comment]: <> (Now in 2021, most of the time developers spend on their programs is not functional or creative, but technical. )
-
-[comment]: <> (The scaling and performance demands increase, core features and structures have to be changed.)
+We've developed a specialized service that enables highly performant, reliable messaging between applications. It makes
+it a breeze to launch new services. Once a service is connected to Flux Capacitor it can talk to any other connected
+service. Your service doesn't need any proxy, load balancer, firewall, service registry, api gateway, circuit breaker,
+message queue, etc. to accomplish that. And if your service is getting too busy to handle all requests you can just add
+a second instance; Flux Capacitor will automatically balance the request load.
 
 # Core concepts
 
@@ -119,9 +61,9 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 
 ### Commands and Queries
 
-Most applications communicate by sending API calls to eachother. Applications can send a query and get an answer back by
-doing a GET call, for instance "Give me all shipped products". Application can also send a command to do something and
-get back whether it succeeded, for instance "Add a new order", "Delete an order". These queries and commands are the
+Most applications communicate by sending API calls to each other. Applications can send a query and get an answer back
+by doing a GET call, for instance "Give me all shipped products". Applications can also send a command to do something
+and get back whether it succeeded, for instance "Add a new order", "Delete an order". These queries and commands are the
 main body of communication between services.
 
 Direct communication, like API calls, does not scale well for rapidly-changing applications with high performance
@@ -132,7 +74,7 @@ secured with even more infrastructure, like a firewall, DDoS protection, some au
 have to hire some cloud infrastructure engineers to deal with all these concerns before being able to launch your
 product.
 
-What if your could send queries and commands completely indirect, and without exposed endpoint? The above mentioned
+What if you could send queries and commands completely indirect, and without exposed endpoint? The above mentioned
 infrastructure would not be needed. An application would simply post a query into a single place, and receive the answer
 from that place, without having any technical dependency on any of the applications that answered. It would not known
 anything about "how" the question ends up in the right place, or "how" the answer is linked back to the application. The
@@ -146,17 +88,19 @@ If you need to ask a question to another application (or to yourself), you will 
 this Java code:
 
 [comment]: <> (@formatter:off)
+
 ```java
-List<Order> orders = FluxCapacitor.queryAndWait(new GetOrders(...));
+List<Order> orders=FluxCapacitor.queryAndWait(new GetOrders(...));
 ```
+
 Or if you want to post something, telling an application to do something:
 
 ```java
 FluxCapacitor.sendCommandAndWait(new AddOrder(...));
 ```
 
-The results of your action will be returned to you, as if you called a method directly! An error would be thrown the same as well.
-Whether the question is director indirect, the interface for your application to "ask" remains the same.
+The results of your action will be returned to you, as if you called a method directly! An error would be thrown the
+same as well. Whether the question is director indirect, the interface for your application to "ask" remains the same.
 
 If you want to handle a request, you will create a **Handler**, which is a function that takes a request as input, and
 gives a result as output. For instance:
@@ -164,9 +108,10 @@ gives a result as output. For instance:
 ```java
 @HandleQuery
 List<Order> handle(GetOrders query){
-    return ...;
-}
+        return...;
+        }
 ```
+
 [comment]: <> (@formatter:on)
 You still need to create the business specific behavior your application needs to perform, but all the technicalities of
 connecting the right requester with the right responder are no longer your problem.
@@ -500,7 +445,7 @@ class OrderFeedbackHandler {
     @HandleEvent
     void handle(ShipOrder event) {
         FluxCapacitor.scheduler().schedule("OrderFeedback-" + event.getOrderId(), Duration.ofDays(2),
-                new AskForFeedback(...));
+                                           new AskForFeedback(...));
     }
 
     @HandleSchedule
