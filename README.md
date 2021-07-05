@@ -63,6 +63,25 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 
 [comment]: <> (evolves has evolved the need)
 
+# Table of contents
+- [Flux Capacitor](#flux-capacitor)
+- [Overview](#overview)
+- [Why this product exists](#why-this-product-exists)
+- [Core concepts](#core-concepts)
+  * [1. Message routing](#1-message-routing)
+    + [1.1 Indirect request-response](#11-indirect-request-response)
+    + [1.2 Tracking](#12-tracking)
+      - [Flux Capacitor makes time travel possible](#flux-capacitor-makes-time-travel-possible)
+    + [1.3 Consumers](#13-consumers)
+    + [1.4 Load balancing](#14-load-balancing)
+    + [1.5 Single threaded](#15-single-threaded)
+    + [1.6 Message Functions](#16-message-functions)
+    + [1.7 Message Handlers](#17-message-handlers)
+  * [2. Event sourcing](#2-event-sourcing)
+    + [2.1 Event sourcing in Flux Capacitor](#21-event-sourcing-in-flux-capacitor)
+    + [2.2 Upcasting](#22-upcasting)
+  * [3. Scheduling messages](#3-scheduling-messages)
+  
 # Overview
 
 # Why this product exists
@@ -161,7 +180,7 @@ processing. We keep an index for where your application was, and you start there
 running multiple nodes, we can easily shift the messages to your other nodes. More on that in the chapter about **Load
 balancing**.
 
-### Flux Capacitor makes time travel possible
+#### Flux Capacitor makes time travel possible
 
 The crème de la crème of our tracking, is that you can go back in time. Great scot!
 
