@@ -77,7 +77,14 @@ Aside from routing messages between applications, Flux Capacitor also does the f
         + [1.4 Load balancing](#14-load-balancing)
         + [1.5 Single threaded](#15-single-threaded)
         + [1.6 Message Functions](#16-message-functions)
-        + [1.7 Message Handlers](#17-message-handlers)
+            - [Queries](#queries)
+            - [Commands](#commands)
+            - [Events](#events)
+            - [Results](#results)
+            - [Errors](#errors)
+            - [Notifications](#notifications)
+            - [Metrics](#metrics)
+            - [Schedules](#schedules)
     * [2. Event sourcing](#2-event-sourcing)
         + [2.1 Event sourcing in Flux Capacitor](#21-event-sourcing-in-flux-capacitor)
         + [2.2 Upcasting](#22-upcasting)
@@ -284,32 +291,74 @@ Every consumer is given a single thread by default.
 
 ### 1.6 Message Functions
 
-* Queries: Processed once, returns result or error
-* Commands: Processed once, returns result or error, can lead to events (see event-sourcing chapter)
-* Events: Processed many times
+Now that you know about trackers, consumers and segments, it is easy to explain why we have defined several message
+types. We will discuss them one by one.
 
-### 1.7 Message Handlers
+#### Queries
 
-We already talked a bit about Handlers, but some of their possibilities are important to know.
+Queries are similar to GET API requests, they are questions that result in an answer or error.
 
--- two handlers in separate classes -- passive
+A query is published when you call ```FluxCapacitor.queryAndWait(...)```, which lets the thread wait for the answer.
+There is also an async version ```FluxCapacitor.query(...)``` using CompletableFutures. Query handlers are annotated
+with ```@HandleQuery```.
 
-```
-@Component
-public class PetstoreEmailSender {
-    @HandleEvent
-    void handle(CatReceivedForAdoption event) {
-        if(event.isCuteEnough()) {
-            FluxCapacitor.sendCommand(new SendEmailToCustomers(createEmail(event)));
-        }
-    }
-    
-    @HandleEvent
-    void handle(BlackCatReceivedForAdoption event) {
-        // do nothing
-    }
-}
-```
+We automatically
+
+* track result messages, pick out the result belonging to your query, and return it.
+* track error messages, pick out the error belonging to your query, and throw it.
+
+#### Commands
+
+Commands are similar to POST API requests, they are commands to perform an action, that result in a success or error
+response.
+
+A command is published when you call ```FluxCapacitor.sendCommandAndWait(...)```. There is also an async method, and the
+method  ```FluxCapacitor.sendAndForgetCommand(...)``` for when you are not interested in the result. Command handlers
+are annotated with ```@HandleCommand```.
+
+We automatically track results and errors for commands as well. The results are void, but they do stop the waiting,
+indicating successful processing.
+
+#### Events
+
+Events are things that happened. Events do not result in an answer or error.
+
+An event is published when you apply an event to an aggregate: ```FluxCapacitor.loadAggregate(...).apply(...)```
+. [More about this in the chapter about event-sourcing](#2-event-sourcing). Events not associated with an aggregate are
+published with ```FluxCapacitor.publishEvent(...)```. Event handlers are annotated with ```@HandleEvent```.
+
+#### Results
+
+Results are answers to other messages. The value you return in for instance a query or command handler, is automatically
+published as a result. Results are returned to the calling method, but can also be handled like any other message with
+the handler annotation ```@HandleResult```.
+
+#### Errors
+
+An uncaught exception within for instance a query or command handler, is automatically published as an error. Errors are
+thrown in the calling method, but can also be handled like any other message with the handler
+annotation ```@HandleError```.
+
+#### Notifications
+
+Notifications are messages that ignore segments. They are sent to every node your have. Notifications are events and
+cannot be published separately. But they can be consumed and tracked separately, and can be handled
+with ```@HandleNotification```.
+
+#### Metrics
+
+Metrics are messages concerning the technical operation of your application. It has a separate log from events, since
+you do not want technical events mixing with functional events. Every communication between your application and Flux
+Capacitor is automatically published to this log, as are a few internal events (for instance when we disconnect an
+unresponsive client).
+
+You can add your own metrics by calling ```FluxCapacitor.publishMetrics(...)```. Metrics can be
+handled with ```@HandleMetrics```. Very useful for creating your own audit
+
+#### Schedules
+
+Schedules are messages that are handled in the
+future. [More about this in the chapter about scheduling messages](#3-scheduling-messages)
 
 ## 2. Event sourcing
 
