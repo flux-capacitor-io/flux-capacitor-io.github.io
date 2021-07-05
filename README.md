@@ -151,7 +151,7 @@ other nodes. [More on that in the chapter about load balancing](#load-balancing)
 
 #### Flux Capacitor makes time travel possible
 
-You can go back in time with trackers. 
+You can go back in time with trackers.
 
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/greatscott.gif "Great scott!")
 
@@ -213,6 +213,9 @@ class Config {
 }
 ```
 
+If you use our FluxCapacitorSpringConfig, and you have message handlers not covered by a custom consumer, we will supply
+you a default consumer.
+
 ### Load balancing
 
 A must for communication between services is high availability.
@@ -228,13 +231,15 @@ The load balancing works with message **Segments**. Messages are divided across 
 segments). When two consumers with the same name are tracking Flux Capacitor, segments are divided 50-50. Consumers only
 get messages from their assigned segments, and consumers only update positions on their assigned segments.
 
-When you place a new node, for instance to deploy a new release, the consumers in the service will often start tracking
-with none of the segments. Once one of the other consumers is done processing, it will get a smaller piece of the
-segments, to make room for the new node. When you remove a node, an message is sent to Flux Capacitor to disconnect the
-consumers, releasing those segments for other consumers to pick up. When a node fatally crashed, we automatically
-release the segments after a certain time.
-
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Loadbalancer.jpg "Loadbalancing")
+
+When you place a new node, for instance to deploy a new release, the new consumers will start tracking with none of the
+segments. Once one of the pre-existing consumers is done processing, it will continue with a smaller piece of the
+segments, to make room for the new consumers.
+
+When you remove a node, a message is sent to Flux Capacitor to disconnect the consumers immediately, releasing those
+segments for other consumers to pick up. In case a node fatally crashes without sending a disconnect, we automatically
+disconnect after a certain time and thus release the segments.
 
 Messages are given random segments by default based on a message id. But you can set a **Routing key** (@RoutingKey in
 our client library) to base the segments on your data in the message. Two messages with the same routing key will be in
@@ -247,7 +252,8 @@ library. [For more see the chapter on event-sourcing](#event-sourcing).
 
 ### Single threaded
 
-Every consumer is given a single thread by default.
+Every consumer is given a single thread by default. You can add a thread to a consumer by adding ```.threads(2)```.
+Message routing within these threads are also separated based on segments.
 
 ### Message Functions
 
@@ -448,7 +454,7 @@ class OrderFeedbackHandler {
     @HandleEvent
     void handle(ShipOrder event) {
         FluxCapacitor.scheduler().schedule("OrderFeedback-" + event.getOrderId(), Duration.ofDays(2),
-                                           new AskForFeedback(...));
+                new AskForFeedback(...));
     }
 
     @HandleSchedule
@@ -475,8 +481,8 @@ because of this, most often not used as the primary means of testing. They are m
 your message routing, the functional interaction only being covered in separate unit tests.
 
 With Flux Capacitor we support fast and easy full backend behavior tests. Ofcourse, you don't need to test our message
-routing, you should only test functional behavior that you created. In the previous chapters we have explained
-how our message routing works, and especially
+routing, you should only test functional behavior that you created. In the previous chapters we have explained how our
+message routing works, and especially
 how [asking a question to your own application and to another application is now exactly the same](#commands-and-queries)
 . Well, here we utilize its full potential, for we can run all handlers locally with minimal message traffic, and in
 parallel.
