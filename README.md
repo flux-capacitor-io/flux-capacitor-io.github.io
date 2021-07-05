@@ -70,7 +70,7 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 - [Why this product exists](#why-this-product-exists)
 - [Core concepts](#core-concepts)
     * [Message routing](#message-routing)
-        + [Indirect request-response](#indirect-request-response)
+        + [Commands and Queries](#commands-and-queries)
         + [Tracking](#tracking)
             - [Flux Capacitor makes time travel possible](#flux-capacitor-makes-time-travel-possible)
         + [Consumers](#consumers)
@@ -117,21 +117,31 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 
 ## Message routing
 
-### Indirect request-response
+### Commands and Queries
 
-Most applications communicate by sending API calls to eachother. Applications can send questions and get an answer back,
-or they can send a command to do something and get back whether it succeeded, e.g: Give me all shipped products, Add a
-new order, Delete an order, etc. These are request-response interactions.
+Most applications communicate by sending API calls to eachother. Applications can send a query and get an answer back by
+doing a GET call, for instance "Give me all shipped products". Application can also send a command to do something and
+get back whether it succeeded, for instance "Add a new order", "Delete an order". These queries and commands are the
+main body of communication between services.
 
-What if your could do request-response completely indirect, asynchronously? An application would simply post a question
-into the world, and receive the answer from the world, without having any technical dependency on the other
-applications. The only thing your application needs to know is "what" question can be asked. It would not known anything
-about "how" the question ends up in the right place, or "how" the answer is linked back to the application. That is
-something that we support with Flux Capacitor.
+Direct communication, like API calls, does not scale well for rapidly-changing applications with high performance
+demands. For robustness you need to balance load across multiple service instances, you have to set up api gateways and
+load balancers to reroute these direct calls. And service registries are needed to tell you which services are available
+to be routed to. Besides this infrastructure, you also have direct exposed endpoints, which need to be secured with even
+more infrastructure, like a firewall, DDoS protection, some authentication mechanism, etc. You would have to hire some
+cloud infrastructure engineers to deal with all these concerns before being able to launch your product.
 
-We provide your applications a single endpoint, where they can post messages and can track messages.
+What if your could send queries and commands completely indirect, and without exposed endpoint? All the above mentioned
+infrastructure would not be needed. An application would simply post a query into a single place, and receive the answer
+from that place, without having any technical dependency on any of the applications that answered. It would not known
+anything about "how" the question ends up in the right place, or "how" the answer is linked back to the application. The
+only thing your application would need to know is "what" question can be answered.
 
-If you need to ask a question to a another application, you will be able to achieve it with for example this Java code:
+With Flux Capacitor we have created this indirect, endpointless way for your services to communicate. We provide your
+applications a single endpoint, where your services can post messages and can track messages.
+
+If you need to ask a question to another application (or sometimes itself), you will be able to achieve it with for
+example this Java code:
 
 [comment]: <> (@formatter:off)
 ```java
@@ -140,8 +150,11 @@ List<Order> orders = FluxCapacitor.queryAndWait(new GetOrders(...));
 Or if you want to post something, telling an application to do something:
 
 ```java
-FluxCapacitor.sendAndForgetCommand(new AddOrder(...));
+FluxCapacitor.sendCommandAndWait(new AddOrder(...));
 ```
+
+The results of your action will be returned to you, as if you called a method directly! Whether the question is direct
+or indirect, the interface for your application to "ask" remains the same.
 
 If you want to handle a request, you will create a **Handler**, which is a function that takes a request as input, and
 gives a result as output. For instance:
@@ -153,7 +166,7 @@ List<Order> handle(GetOrders query){
 }
 ```
 [comment]: <> (@formatter:on)
-You still need to createthe business specific behavior your application needs to perform, but all the technicalities of
+You still need to create the business specific behavior your application needs to perform, but all the technicalities of
 connecting the right requester with the right responder are no longer your problem.
 
 ### Tracking
@@ -502,3 +515,10 @@ class OrderFeedbackHandler {
 
 In the example above you can see that the schedule can be easily cancelled, in this case if the customer returns the
 order before those 2 days are up.
+
+## Full behavior testing locally
+
+Full backend behavior tests, especially tests across multiple different services, are normally quite difficult to
+achieve. Often a local environment Large amounts of fast unit tests are possible, but In the previous chapters we have
+explained how our message routing works, 
+
