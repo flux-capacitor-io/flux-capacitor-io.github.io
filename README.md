@@ -69,14 +69,14 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 - [Overview](#overview)
 - [Why this product exists](#why-this-product-exists)
 - [Core concepts](#core-concepts)
-    * [1. Message routing](#1-message-routing)
-        + [1.1 Indirect request-response](#11-indirect-request-response)
-        + [1.2 Tracking](#12-tracking)
+    * [Message routing](#message-routing)
+        + [Indirect request-response](#indirect-request-response)
+        + [Tracking](#tracking)
             - [Flux Capacitor makes time travel possible](#flux-capacitor-makes-time-travel-possible)
-        + [1.3 Consumers](#13-consumers)
-        + [1.4 Load balancing](#14-load-balancing)
-        + [1.5 Single threaded](#15-single-threaded)
-        + [1.6 Message Functions](#16-message-functions)
+        + [Consumers](#consumers)
+        + [Load balancing](#load-balancing)
+        + [Single threaded](#single-threaded)
+        + [Message Functions](#message-functions)
             - [Queries](#queries)
             - [Commands](#commands)
             - [Events](#events)
@@ -85,10 +85,10 @@ Aside from routing messages between applications, Flux Capacitor also does the f
             - [Notifications](#notifications)
             - [Metrics](#metrics)
             - [Schedules](#schedules)
-    * [2. Event sourcing](#2-event-sourcing)
-        + [2.1 Event sourcing in Flux Capacitor](#21-event-sourcing-in-flux-capacitor)
-        + [2.2 Upcasting](#22-upcasting)
-    * [3. Scheduling messages](#3-scheduling-messages)
+    * [Event sourcing](#event-sourcing)
+        + [Event sourcing in Flux Capacitor](#event-sourcing-in-flux-capacitor)
+        + [Upcasting](#upcasting)
+    * [Scheduling messages](#scheduling-messages)
 
 # Overview
 
@@ -115,9 +115,9 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 
 # Core concepts
 
-## 1. Message routing
+## Message routing
 
-### 1.1 Indirect request-response
+### Indirect request-response
 
 Most applications communicate by sending API calls to eachother. Applications can send questions and get an answer back,
 or they can send a command to do something and get back whether it succeeded, e.g: Give me all shipped products, Add a
@@ -156,7 +156,7 @@ List<Order> handle(GetOrders query){
 You still need to createthe business specific behavior your application needs to perform, but all the technicalities of
 connecting the right requester with the right responder are no longer your problem.
 
-### 1.2 Tracking
+### Tracking
 
 **Tracking** gives us the ability to get data from us to your application as fast as possible, without requiring your
 application to supply an endpoint to us.
@@ -186,7 +186,7 @@ you left off.
 Suppose your application crashes during processing using tracking (during step 2). In that case, the application has not
 updated its position yet. Once your application has rebooted, the application will start at the same position and
 receive the same set of messages again. Or if you were running multiple nodes, we simply shift the messages to your
-other nodes. More on that in the chapter about **Load balancing**.
+other nodes. [More on that in the chapter about load balancing](#load-balancing).
 
 #### Flux Capacitor makes time travel possible
 
@@ -203,7 +203,7 @@ during new projects.
 You can wait with certain secondary features, like billing customers based on usage. You will always be able to use your
 old data.
 
-### 1.3 Consumers
+### Consumers
 
 The parts of your application that processes messages are called **Consumers**. A consumer consists of:
 
@@ -250,7 +250,7 @@ class Config {
 }
 ```
 
-### 1.4 Load balancing
+### Load balancing
 
 A must for communication between services is high availability.
 
@@ -280,23 +280,22 @@ processed in order.
 
 Messages in order are very useful for **event-sourcing**, since we guarantee we are not out of order, and thus are
 working with the latest situation. Also, we were able to create efficient local caching for aggregate in our client
-library. For more see the next chapter.
+library. [For more see the chapter on event-sourcing](#event-sourcing).
 
-For instance for event-sourcing (see next chapter) it is useful if all events are always written in order, and there is
-no risk of .
-
-### 1.5 Single threaded
+### Single threaded
 
 Every consumer is given a single thread by default.
 
-### 1.6 Message Functions
+### Message Functions
 
-Now that you know about trackers, consumers and segments, it is easy to explain why we have defined several message
-types. We will discuss them one by one.
+Now that you know about our asynchronous messaging, it is easy to explain why we have defined several message types. We
+will discuss them one by one.
 
 #### Queries
 
-Queries are similar to GET API requests, they are questions that result in an answer or error.
+Queries are similar to GET API requests, they are questions that result in an answer or error. We provide you methods to
+input a query, and receive this result or error easily and in the same manner, whether the answer came locally or from a
+completely different application.
 
 A query is published when you call ```FluxCapacitor.queryAndWait(...)```, which lets the thread wait for the answer.
 There is also an async version ```FluxCapacitor.query(...)``` using CompletableFutures. Query handlers are annotated
@@ -312,9 +311,9 @@ We automatically
 Commands are similar to POST API requests, they are commands to perform an action, that result in a success or error
 response.
 
-A command is published when you call ```FluxCapacitor.sendCommandAndWait(...)```. There is also an async method, and the
-method  ```FluxCapacitor.sendAndForgetCommand(...)``` for when you are not interested in the result. Command handlers
-are annotated with ```@HandleCommand```.
+A command is published when you call ```FluxCapacitor.sendCommandAndWait(...)```. There is also an async version, and
+the method  ```FluxCapacitor.sendAndForgetCommand(...)``` for when you are not interested in the result. Command
+handlers are annotated with ```@HandleCommand```.
 
 We automatically track results and errors for commands as well. The results are void, but they do stop the waiting,
 indicating successful processing.
@@ -324,7 +323,7 @@ indicating successful processing.
 Events are things that happened. Events do not result in an answer or error.
 
 An event is published when you apply an event to an aggregate: ```FluxCapacitor.loadAggregate(...).apply(...)```
-. [More about this in the chapter about event-sourcing](#2-event-sourcing). Events not associated with an aggregate are
+. [More about this in the chapter about event-sourcing](#event-sourcing). Events not associated with an aggregate are
 published with ```FluxCapacitor.publishEvent(...)```. Event handlers are annotated with ```@HandleEvent```.
 
 #### Results
@@ -349,18 +348,18 @@ with ```@HandleNotification```.
 
 Metrics are messages concerning the technical operation of your application. It has a separate log from events, since
 you do not want technical events mixing with functional events. Every communication between your application and Flux
-Capacitor is automatically published to this log, as are a few internal events (for instance when we disconnect an
-unresponsive client).
+Capacitor is automatically published to this log (e.g. ApplyEvents, GetEvents, ReadResults), as are a few internal
+events (e.g. DisconnectClient for when we disconnect an unresponsive client).
 
-You can add your own metrics by calling ```FluxCapacitor.publishMetrics(...)```. Metrics can be
-handled with ```@HandleMetrics```. Very useful for creating your own audit
+You can add your own metrics by calling ```FluxCapacitor.publishMetrics(...)```. Metrics can be handled
+with ```@HandleMetrics```. Very useful for creating your own audit
 
 #### Schedules
 
 Schedules are messages that are handled in the
-future. [More about this in the chapter about scheduling messages](#3-scheduling-messages)
+future. [More about this in the chapter about scheduling messages](#scheduling-messages)
 
-## 2. Event sourcing
+## Event sourcing
 
 Most applications use a database to keep track of the latest state of the application. Getting to that latest state
 probably involved lots of tiny updates, e.g: a user signed up, an order got shipped, a complaint was filed, and so on.
@@ -383,7 +382,7 @@ of storing data. For more in-depth explanations please refer to
 <a href="https://docs.microsoft.com/en-us/azure/architecture/patterns/event-sourcing" target="_blank">excellent</a>
 <a href="https://www.eventstore.com/blog/what-is-event-sourcing" target="_blank">articles</a>.
 
-### 2.1 Event sourcing in Flux Capacitor
+### Event sourcing in Flux Capacitor
 
 Flux Capacitor doesn't force you to use event sourcing in any way. It simply makes it easy for you if you do. Here's how
 you can load an event sourced entity (or aggregate) using our Java client:
@@ -430,7 +429,7 @@ What if you don't want to event source this entity but store and load this entit
 just change `@Aggregate` to `@Aggregate(eventSourced=false)` and we'll automatically store the latest state of the
 entity in Flux Capacitor's key value store. Boom!
 
-### 2.2 Upcasting
+### Upcasting
 
 Event sourcing your entities is very powerful, but it comes with a challenge: your stored events need to stand the test
 of time. They need to keep up with all the changes you make to your event classes, like changing a field name. Flux
@@ -469,7 +468,7 @@ class UserUpcaster {
 This upcaster will be applied to all revision 0 events of the UserCreated event. After upcasting, the revision of the
 serialized event will automatically be incremented by 1.
 
-## 3. Scheduling messages
+## Scheduling messages
 
 Another notoriously tricky problem in a distributed application is the scheduling of future events. Typically this would
 involve an intricate master-slave setup with synchronization on a database, but with Flux Capacitor it is as easy as
