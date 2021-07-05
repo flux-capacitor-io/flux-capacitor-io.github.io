@@ -150,37 +150,35 @@ trackers in your consumer.
 
 ### Consumers
 
-The parts of your application that processes messages are called **Consumers**. A consumer consists of:
+The parts of your application that do the processing of messages are called **Consumers**. A consumer consists of:
 
-* A filter of the types of messages it consumes (e.g. only events, or all queries called "GetOrders")
-* A filter of handlers that belong to this consumer (e.g. all handlers in this package, or only handler methods called
-  X)
-* A set of trackers
+* A filter of the types of messages it consumes (e.g. only events)
+* A filter of handlers that belong to this consumer (e.g. all handlers in this package)
+* A set of trackers (e.g four, two application instances with two trackers per application instance)
 
-The trackers belonging to a single consumer can be seen as separate **Threads** of the consumer. The main function of
-separate trackers is load balancing and redundancy. [More on how we load balance with consumers here](#load-balancing)
+Each tracker in the consumer passes its messages through the handlers. The trackers belonging to a single consumer can
+be seen as separate **Threads** of the consumer. The main function of multiple trackers is load balancing and
+redundancy. [More on how we load balance with consumers here](#load-balancing)
 
-In a sense, consumers are small separate applications. The beauty of these consumers, is that whether consumers live in
-the same application or in separately running applications, their behavior and interaction remains exactly the same.
+You can split your application in a multitude of consumers. The consumers are in a sense small separate applications.
+Whether consumers live together in the same application or in separately hosted applications, their behavior and
+interaction remains exactly the same. So you can divide parts of your application that do not really belong together,
+before you even moved them to a separate application.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/moveconsumersfreely.jpg "Consumers can be moved freely")
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/moveconsumers.jpg "Consumers can be moved freely")
 
-With separate consumers, you can divide parts of your application that do not really belong together, before you even
-moved them to a separate application.
-
-Suppose you have a shop application, with orders and deliveries, and your billing department needs you to count all
-orders for specific categories of things. You don't want that code influencing your core code. With a separate consumer,
-you can build the billing part as if it is completely separate.
+For instance, you have a shop application, with orders and deliveries, and then you need to add a connection to a
+delivery provider, like UPS. You don't want you core code influenced by a connection with a specific party. You can put
+all UPS related handlers in a separate consumer. The UPS consumer might have handlers listening to events from your core
+consumer, but whether the consumer is inside the same application or not does not matter anymore.
 
 More often than not, programmers will link separate concerns directly that should never be linked at all. Some concerns
 could touch every part of your core code. These are called **cross-cutting concerns**,
 [more on this here.](https://en.wikipedia.org/wiki/Cross-cutting_concern#:~:text=Cross%2Dcutting%20concerns%20are%20parts,oriented%20programming%20or%20procedural%20programming.)
-With a separate consumer, you can easily listen to a whole bunch of messages separately, and often remove these
-cross-cutting concerns from the core code.
+With a separate consumer, you can easily listen to a whole bunch of messages separately, and remove these
+cross-cutting concerns from the core functionality.
 
 Creating a consumer quite easy, here is an example in Java using Spring and our client library:
-
-An example of a consumer configuration:
 
 ``` java
 @Configuration
@@ -197,7 +195,8 @@ class Config {
 }
 ```
 
-If a handler is not covered by any of your custom consumers, it is assigned to a default consumer.
+If a handler is not covered by any of your custom consumers, it is assigned to a default consumer of the application
+instance it is in.
 
 ### Load balancing
 
@@ -211,8 +210,8 @@ With our asynchronous setup, we give you load balancing by default, without requ
 balancers. Load is automatically balanced within consumers.
 
 The load balancing works with message **Segments**. Messages are divided across a set of segments (right now 1024
-segments). When a consumer consists of two trackers, segments are divided 50-50. Trackers only
-get messages from their assigned segments, and trackers only update positions on their assigned segments.
+segments). When a consumer consists of two trackers, segments are divided 50-50. Trackers only get messages from their
+assigned segments, and trackers only update positions on their assigned segments.
 
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/segments.jpg "Loadbalancing")
 
