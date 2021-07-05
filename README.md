@@ -46,9 +46,9 @@ symptoms.
 
 # Messaging as a Service
 
-So what problems do we tackle? Well, our biggest objective is to make it easy, fast and reliable for your services to
-communicate with each other and the outside world. We don't want you to worry about building the next microservice
-platform like so many companies have before you, just so you can launch your next big thing.
+Our biggest objective is to make it easy, fast and reliable for your services to communicate with each other and the
+outside world. We don't want you to worry about building the next microservice platform like so many companies have
+before you, just so you can launch your next big thing.
 
 We've developed a specialized service that enables highly performant, reliable messaging between applications. It makes
 it a breeze to launch new services. Once a service is connected to Flux Capacitor it can talk to any other connected
@@ -77,12 +77,12 @@ need a dedicated team of cloud engineers to deal with all these concerns before 
 product.
 
 All this additional infrastructure is the result of the fact that queries and commands are being pushed to your
-services. What if we would turn this around? What if your services would pull in their queries and commands from a and
-handle them at their own pace? That simple change would render all the mentioned infrastructure obsolete. Moreover, we
-would break the link between the producer of a request and its responder. The producer does not need to know anything
-about the consumer (location transparency) and vice versa. The only thing your application needs to know is what queries
-or commands it wants to handle. Passing requests to another application would become just as easy as passing it to a
-class within your application.
+services. What if we would turn this around? What if your services would pull in their queries and commands and handle
+them at their own pace? That simple change would render all the mentioned infrastructure obsolete. Moreover, we would
+break the link between the producer of a request and its responder. The producer does not need to know anything about
+the consumer (location transparency) and vice versa. The only thing your application needs to know is what queries or
+commands it wants to handle. Passing requests to another application would become just as easy as passing it to a class
+within your application.
 
 With Flux Capacitor this indirect form of communication based on pull instead of push is made very easy. We provide your
 applications a single endpoint, to which your services can both publish and subscribe various types of messages.
@@ -97,7 +97,7 @@ List<Order> orders = FluxCapacitor.queryAndWait(new GetOrders(...));
 ```
 
 Note: examples here are in Java, but Flux Capacitor does not care what language your applications are written
-in of course.
+in.
 
 To send a command you can simply do:
 
@@ -180,8 +180,8 @@ consumer, but whether the consumer is inside the same application or not does no
 More often than not, programmers will link separate concerns directly that should never be linked at all. Some concerns
 could touch every part of your core code. These are called **cross-cutting concerns**,
 [more on this here.](https://en.wikipedia.org/wiki/Cross-cutting_concern#:~:text=Cross%2Dcutting%20concerns%20are%20parts,oriented%20programming%20or%20procedural%20programming.)
-With a separate consumer, you can easily listen to a whole bunch of messages separately, and remove these
-cross-cutting concerns from the core functionality.
+With a separate consumer, you can easily listen to a whole bunch of messages separately, and remove these cross-cutting
+concerns from the core functionality.
 
 Creating a consumer quite easy, here is an example in Java using Spring and our client library:
 
@@ -461,7 +461,7 @@ class OrderFeedbackHandler {
     @HandleEvent
     void handle(ShipOrder event) {
         FluxCapacitor.scheduler().schedule("OrderFeedback-" + event.getOrderId(), Duration.ofDays(2),
-                                           new AskForFeedback(...));
+                new AskForFeedback(...));
     }
 
     @HandleSchedule
@@ -503,7 +503,7 @@ class BankAccountTest {
             CreateAccount.builder().accountId("b").userId("user2").build();
     private static final TransferMoney transferMoney = new TransferMoney("a", "b", BigDecimal.TEN);
     private final TestFixture testFixture = TestFixture.create(new AccountCommandHandler(), new TransferEventHandler(),
-                                                               new AccountLifecycleHandler());
+            new AccountLifecycleHandler());
 
     @Test
     void testCreateAccountTwiceNotAllowed() {
