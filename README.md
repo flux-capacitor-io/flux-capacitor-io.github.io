@@ -89,6 +89,7 @@ Aside from routing messages between applications, Flux Capacitor also does the f
         + [Event sourcing in Flux Capacitor](#event-sourcing-in-flux-capacitor)
         + [Upcasting](#upcasting)
     * [Scheduling messages](#scheduling-messages)
+    * [Full behavior testing](#full-behavior-testing)
 
 # Overview
 
@@ -518,9 +519,43 @@ class OrderFeedbackHandler {
 In the example above you can see that the schedule can be easily cancelled, in this case if the customer returns the
 order before those 2 days are up.
 
-## Full behavior testing locally
+## Full behavior testing
 
 Full backend behavior tests, especially tests across multiple different services, are normally quite difficult to
-achieve. Often a local environment Large amounts of fast unit tests are possible, but In the previous chapters we have
-explained how our message routing works, 
+achieve. Often a local environment has to be created with complete service setup. Databases, full running services and
+networking that at least partially resembles the real setup. These "full" tests are often very slow to start, and
+because of this, most often not used as the primary means of testing. They are most often used to detect problems with
+your message routing, the functional interaction only being covered in separate unit tests.
 
+With Flux Capacitor we support fast and easy full backend behavior tests. Ofcourse, you don't need to test our message
+routing, you should only test functional behavior that you created. In the previous chapters we have explained
+how our message routing works, and especially
+how [asking a question to your own application and to another application is now exactly the same](#commands-and-queries)
+. Well, here we utilize its full potential, for we can run all handlers locally with minimal message traffic, and in
+parallel.
+
+An example from our [example bank project, check it out to see the test speed and for more cleancut examples]():
+
+```java
+class BankAccountTest {
+    private static final CreateAccount createAccount = CreateAccount.builder().accountId("a").userId("user1").build();
+    private static final CreateAccount createAnotherAccount = CreateAccount.builder().accountId("b").userId("user2").build();
+    private static final TransferMoney transferMoney = new TransferMoney("a", "b", BigDecimal.TEN);
+    private final TestFixture testFixture = TestFixture.create(new AccountCommandHandler(), new TransferEventHandler(),
+            new AccountLifecycleHandler());
+
+    @Test
+    void testCreateAccountTwiceNotAllowed() {
+        testFixture.givenCommands(createAccount).whenCommand(createAccount).expectException(IllegalCommandException.class);
+    }
+
+    @Test
+    void testTransferNotAllowedWithInsufficientFunds() {
+        testFixture.givenCommands(createAccount, createAnotherAccount)
+                .whenCommand(transferMoney).expectException(IllegalCommandException.class).expectNoEvents();
+    }
+}
+```
+
+If you want to be stubborn and still test including our message routing, you are ofcourse able to do this. We provide a
+test-server [here](https://hub.docker.com/repository/docker/fluxcapacitorio/flux-capacitor-test).
