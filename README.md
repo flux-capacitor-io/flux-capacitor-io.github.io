@@ -64,24 +64,25 @@ Aside from routing messages between applications, Flux Capacitor also does the f
 [comment]: <> (evolves has evolved the need)
 
 # Table of contents
+
 - [Flux Capacitor](#flux-capacitor)
 - [Overview](#overview)
 - [Why this product exists](#why-this-product-exists)
 - [Core concepts](#core-concepts)
-  * [1. Message routing](#1-message-routing)
-    + [1.1 Indirect request-response](#11-indirect-request-response)
-    + [1.2 Tracking](#12-tracking)
-      - [Flux Capacitor makes time travel possible](#flux-capacitor-makes-time-travel-possible)
-    + [1.3 Consumers](#13-consumers)
-    + [1.4 Load balancing](#14-load-balancing)
-    + [1.5 Single threaded](#15-single-threaded)
-    + [1.6 Message Functions](#16-message-functions)
-    + [1.7 Message Handlers](#17-message-handlers)
-  * [2. Event sourcing](#2-event-sourcing)
-    + [2.1 Event sourcing in Flux Capacitor](#21-event-sourcing-in-flux-capacitor)
-    + [2.2 Upcasting](#22-upcasting)
-  * [3. Scheduling messages](#3-scheduling-messages)
-  
+    * [1. Message routing](#1-message-routing)
+        + [1.1 Indirect request-response](#11-indirect-request-response)
+        + [1.2 Tracking](#12-tracking)
+            - [Flux Capacitor makes time travel possible](#flux-capacitor-makes-time-travel-possible)
+        + [1.3 Consumers](#13-consumers)
+        + [1.4 Load balancing](#14-load-balancing)
+        + [1.5 Single threaded](#15-single-threaded)
+        + [1.6 Message Functions](#16-message-functions)
+        + [1.7 Message Handlers](#17-message-handlers)
+    * [2. Event sourcing](#2-event-sourcing)
+        + [2.1 Event sourcing in Flux Capacitor](#21-event-sourcing-in-flux-capacitor)
+        + [2.2 Upcasting](#22-upcasting)
+    * [3. Scheduling messages](#3-scheduling-messages)
+
 # Overview
 
 # Why this product exists
@@ -155,9 +156,9 @@ application to supply an endpoint to us.
 
 Tracking is superior to pushing messages or queues. It works like this:
 
-* Your application tells us to get the next X messages
-* Your application processes the messages
-* Your application sends us back the index of the **last message it processed**.
+1. Your application tells us to get the next X messages
+2. Your application processes the messages
+3. Your application sends us back its new position (the index of the **last message it processed**).
 
 When there are no messages waiting, your connection will hold until we receive a new message, and instantly send the
 message to you. When there are lots of messages waiting, you will immediately get a batch with a size of your own
@@ -168,54 +169,33 @@ The request-response interaction with tracking looks like this:
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Tracking.jpg "Basics")
 
 With this mechanism, it is not possible to overwhelm your application with too much pushing, like a DDoS attack. There
-is no endpoint to overload, and you will only get a next batch of messages once you are done processing. It is on-demand
-messaging, your application is in control of what it receives.
+is no endpoint to overload, and you will only get a next batch of messages once you are done processing. Your
+application is in control of what it receives.
 
 Also it is not possible to lose a message. With queues, messages often disappear once read, or there are certain
-irritating limitations set for how long a read message is available.
+irritating limitations set for how long a read message is available. With tracking however, your will always start where
+you left off.
 
-Suppose your application crashes during processing using tracking. Your application was still processing, so did not
-send a new position or index to us. Once your application has rebooted, you will receive the messages again that it was
-processing. We keep an index for where your application was, and you start there, where you left off. If you were
-running multiple nodes, we can easily shift the messages to your other nodes. More on that in the chapter about **Load
-balancing**.
+Suppose your application crashes during processing using tracking (during step 2). In that case, the application has not
+updated its position yet. Once your application has rebooted, the application will start at the same position and
+receive the same set of messages again. Or if you were running multiple nodes, we simply shift the messages to your
+other nodes. More on that in the chapter about **Load balancing**.
 
 #### Flux Capacitor makes time travel possible
 
-The crème de la crème of our tracking, is that you can go back in time. Great scot!
+you can go back in time with trackers. Great scot!
 
-You can reset a tracker to any previous point in time. When you add a new tracker, you can tell us to start tracking
+You can reset a tracker to any previous point in time. Or when you add a new tracker, you can tell us to start tracking
 from the beginning of time.
 
-Suppose you are creating a new application, and created a bug that made you process a whole bunch of messages wrongly.
-You deploy your fix, and then simply reset your tracker to the moment you deployed the bug. This has often been our
-saving grace during new projects.
+Resetting a tracker can be very useful. 
+Suppose you are creating a new application, and created a bug that made you process a bunch of messages wrongly.
+You deploy your fix, and then simply reset your tracker to the moment you deployed the bug. 
+All messages will again be processed, now with the fixed message handlers. 
+This has often been our saving grace during new projects.
 
-Another benefit is that you can wait with certain secondary features, like billing customers based on usage. You will
+You can wait with certain secondary features, like billing customers based on usage. You will
 always be able to use your old data.
-
-
-[comment]: <> (```java)
-
-[comment]: <> (@Configuration)
-
-[comment]: <> (@ComponentScan)
-
-[comment]: <> (public class Config {)
-
-[comment]: <> (  @Bean)
-
-[comment]: <> (  public Client fluxCapacitorClient&#40;&#41; {)
-
-[comment]: <> (    return WebSocketClient.newInstance&#40;WebSocketClient.Properties.builder&#40;&#41;)
-
-[comment]: <> (            .serviceBaseUrl&#40;"..."&#41;.build&#40;&#41;&#41;;)
-
-[comment]: <> (  })
-
-[comment]: <> (})
-
-[comment]: <> (```)
 
 ### 1.3 Consumers
 
@@ -242,10 +222,10 @@ orders for specific categories of things. You don't want that code influencing y
 you can build the billing part as if it is completely separate.
 
 More often than not, programmers will link separate concerns directly that should never be linked at all. Some concerns
-could touch every part of your core code. These are called **cross-cutting
-concerns**, 
+could touch every part of your core code. These are called **cross-cutting concerns**,
 [more on this here.](https://en.wikipedia.org/wiki/Cross-cutting_concern#:~:text=Cross%2Dcutting%20concerns%20are%20parts,oriented%20programming%20or%20procedural%20programming.)
-With a separate consumer, you can easily listen to a whole bunch of messages separately, and often remove these cross-cutting concerns from the core code.
+With a separate consumer, you can easily listen to a whole bunch of messages separately, and often remove these
+cross-cutting concerns from the core code.
 
 Creating a consumer quite easy, here is an example in Java using Spring and our client library:
 
@@ -266,41 +246,42 @@ class Config {
 
 ### 1.4 Load balancing
 
-A must for communication between services is high availability. 
+A must for communication between services is high availability.
 
-With API communication this is often done by running multiple nodes of a service, and having incoming traffic 
-distributed over these nodes. 
-The load is distributed by passing all traffic through an API gateway, where a load balancer divides the traffic between nodes.
+With API communication this is often done by running multiple nodes of a service, and having incoming traffic
+distributed over these nodes. The load is distributed by passing all traffic through an API gateway, where a load
+balancer divides the traffic between nodes.
 
-With our asynchronous setup, we give you load balancing by default, without requiring any infrastructure like load balancers.
-Load is automatically balanced between consumers **with the same name**. 
+With our asynchronous setup, we give you load balancing by default, without requiring any infrastructure like load
+balancers. Load is automatically balanced between consumers **with the same name**.
 
-The load balancing works with message **Segments**. 
-Messages are divided across a set of segments (right now 1024 segments).
-When two consumers with the same name are tracking Flux Capacitor, segments are divided 50-50.
-Consumers only get messages from their assigned segments, and consumers only update positions on their assigned segments.
+The load balancing works with message **Segments**. Messages are divided across a set of segments (right now 1024
+segments). When two consumers with the same name are tracking Flux Capacitor, segments are divided 50-50. Consumers only
+get messages from their assigned segments, and consumers only update positions on their assigned segments.
 
-When you place a new node, for instance to deploy a new release, the consumers in the service will often start tracking with none of the segments.
-Once one of the other consumers is done processing, it will get a smaller piece of the segments, to make room for the new node.
-When you remove a node, an message is sent to Flux Capacitor to disconnect the consumers, releasing those segments for other consumers to pick up.
-When a node fatally crashed, we automatically release the segments after a certain time.
+When you place a new node, for instance to deploy a new release, the consumers in the service will often start tracking
+with none of the segments. Once one of the other consumers is done processing, it will get a smaller piece of the
+segments, to make room for the new node. When you remove a node, an message is sent to Flux Capacitor to disconnect the
+consumers, releasing those segments for other consumers to pick up. When a node fatally crashed, we automatically
+release the segments after a certain time.
 
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Loadbalancer.jpg "Loadbalancing")
 
-Messages are given random segments by default based on a message id. 
-But you can set a **Routing key** (@RoutingKey in our client library) to base the segments on your data in the message. 
-Two messages with the same routing key will be in the same segment, and thus be processed in the same consumer. 
-Therefore, messages with the same routing key are always processed in order. 
+Messages are given random segments by default based on a message id. But you can set a **Routing key** (@RoutingKey in
+our client library) to base the segments on your data in the message. Two messages with the same routing key will be in
+the same segment, and thus be processed in the same consumer. Therefore, messages with the same routing key are always
+processed in order.
 
-Messages in order are very useful for **event-sourcing**, since we guarantee we are not out of order, and thus are working with the latest situation. 
-Also, we were able to create efficient local caching for aggregate in our client library. For more see the next chapter.
+Messages in order are very useful for **event-sourcing**, since we guarantee we are not out of order, and thus are
+working with the latest situation. Also, we were able to create efficient local caching for aggregate in our client
+library. For more see the next chapter.
 
-For instance for event-sourcing (see next chapter) it is useful if all events are always written in order, and there is no risk of .
+For instance for event-sourcing (see next chapter) it is useful if all events are always written in order, and there is
+no risk of .
 
 ### 1.5 Single threaded
 
 Every consumer is given a single thread by default.
-
 
 ### 1.6 Message Functions
 
@@ -330,7 +311,6 @@ public class PetstoreEmailSender {
     }
 }
 ```
-
 
 ## 2. Event sourcing
 
@@ -443,10 +423,10 @@ serialized event will automatically be incremented by 1.
 
 ## 3. Scheduling messages
 
-Another notoriously tricky problem in a distributed application is the scheduling of future events. Typically this 
-would involve an intricate master-slave setup with synchronization on a database, but with Flux Capacitor
-it is as easy as sending and handling any other message. Scheduled messages are stored and read like other messages
-except that they are not released before their deadline and can be cancelled.
+Another notoriously tricky problem in a distributed application is the scheduling of future events. Typically this would
+involve an intricate master-slave setup with synchronization on a database, but with Flux Capacitor it is as easy as
+sending and handling any other message. Scheduled messages are stored and read like other messages except that they are
+not released before their deadline and can be cancelled.
 
 Here's an example of a handler in Java that asks a customer if they are satisfied with their order 2 days after it got
 shipped:
@@ -458,7 +438,7 @@ class OrderFeedbackHandler {
     @HandleEvent
     void handle(ShipOrder event) {
         FluxCapacitor.scheduler().schedule("OrderFeedback-" + event.getOrderId(), Duration.ofDays(2),
-                                           new AskForFeedback(...));
+                new AskForFeedback(...));
     }
 
     @HandleSchedule
