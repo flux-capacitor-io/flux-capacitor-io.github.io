@@ -213,8 +213,7 @@ class Config {
 }
 ```
 
-If you use our FluxCapacitorSpringConfig, and you have message handlers not covered by a custom consumer, we will supply
-you a default consumer.
+If a handler is not covered by any of your custom consumers, it is assigned to a default consumer.
 
 ### Load balancing
 
