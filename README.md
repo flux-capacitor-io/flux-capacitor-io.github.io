@@ -91,7 +91,7 @@ this Java code:
 [comment]: <> (@formatter:off)
 
 ```java
-List<Order> orders=FluxCapacitor.queryAndWait(new GetOrders(...));
+List<Order> orders = FluxCapacitor.queryAndWait(new GetOrders(...));
 ```
 
 Or if you want to post something, telling an application to do something:
@@ -109,11 +109,12 @@ gives a result as output. For instance:
 ```java
 @HandleQuery
 List<Order> handle(GetOrders query){
-        return...;
-        }
+    return...;
+}
 ```
 
 [comment]: <> (@formatter:on)
+
 You still need to create the business specific behavior your application needs to perform, but all the technicalities of
 connecting the right requester with the right responder are no longer your problem.
 
@@ -132,39 +133,20 @@ When there are no messages waiting, your connection will hold until we receive a
 message to you. When there are lots of messages waiting, you will immediately get a batch with a size of your own
 choosing.
 
-The request-response interaction with tracking looks like this:
+The things doing the tracking we call **Trackers**. Queries with tracking requires two trackers, and looks like this:
 
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Tracking.jpg "Basics")
 
-With this mechanism, it is not possible to overwhelm your application with too much pushing, like a DDoS attack. There
-is no endpoint to overload, and you will only get a next batch of messages once you are done processing. Your
-application is in control of what it receives.
+With tracking, it is not possible to overwhelm your application with too much pushing, like a DDoS attack. There is no
+endpoint to overload, and you will only get a next batch of messages once you are done processing. Your application is
+in control of what it receives.
 
 Also it is not possible to lose a message. With queues, messages often disappear once read, or there are certain
-irritating limitations set for how long a read message is available. With tracking however, your will always start where
-you left off.
-
-Suppose your application crashes during processing using tracking (during step 2). In that case, the application has not
-updated its position yet. Once your application has rebooted, the application will start at the same position and
-receive the same set of messages again. Or if you were running multiple nodes, we simply shift the messages to your
-other nodes. [More on that in the chapter about load balancing](#load-balancing).
-
-#### Flux Capacitor makes time travel possible
-
-You can go back in time with trackers.
-
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/greatscott.gif "Great scott!")
-
-You can reset a tracker to any previous point in time. Or when you add a new tracker, you can tell us to start tracking
-from the beginning of time.
-
-Resetting a tracker can be very useful. Suppose you are creating a new application, and created a bug that made you
-process a bunch of messages wrongly. You deploy your fix, and then simply reset your tracker to the moment you deployed
-the bug. All messages will again be processed, now with the fixed message handlers. This has often been our saving grace
-during new projects.
-
-You can wait with certain secondary features, like billing customers based on usage. You will always be able to use your
-old data.
+limitations set for how long a read message is available. With tracking however, your will always start where you left
+off. Suppose your application crashes during processing using tracking (during step 2). In that case, the application
+has not updated its position yet. Once your application has rebooted, the application will start at the same position
+and receive the same set of messages again. Or if you were running multiple nodes, we simply shift the messages to other
+trackers in your consumer.
 
 ### Consumers
 
@@ -173,13 +155,13 @@ The parts of your application that processes messages are called **Consumers**. 
 * A filter of the types of messages it consumes (e.g. only events, or all queries called "GetOrders")
 * A filter of handlers that belong to this consumer (e.g. all handlers in this package, or only handler methods called
   X)
+* A set of trackers
 
-Each consumer is tracking separately. Within the same application, you can have multiple separate consumers that track
-messages at completely different speeds.
+The trackers belonging to a single consumer can be seen as separate **Threads** of the consumer. The main function of
+separate trackers is load balancing and redundancy. [More on how we load balance with consumers here](#load-balancing)
 
-The beauty of these consumers, is that whether consumers live in the same application or in separately running
-applications, their behavior and interaction remains exactly the same. In a sense, consumers are small separate
-applications.
+In a sense, consumers are small separate applications. The beauty of these consumers, is that whether consumers live in
+the same application or in separately running applications, their behavior and interaction remains exactly the same.
 
 ![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/moveconsumersfreely.jpg "Consumers can be moved freely")
 
@@ -198,6 +180,8 @@ cross-cutting concerns from the core code.
 
 Creating a consumer quite easy, here is an example in Java using Spring and our client library:
 
+An example of a consumer configuration:
+
 ``` java
 @Configuration
 @ComponentScan
@@ -205,7 +189,7 @@ class Config {
     @Autowired
     void configure(FluxCapacitorBuilder builder) {
         builder.addConsumerConfiguration(ConsumerConfiguration.builder()
-                        .messageType(QUERY)
+                        .messageType(QUERY).threads(2)
                         .name(...)
                         .handlerFilter(h -> h.getClass().getPackage().getName()
                             .startsWith("com.example")).build());
@@ -224,13 +208,13 @@ distributed over these nodes. The load is distributed by passing all traffic thr
 balancer divides the traffic between nodes.
 
 With our asynchronous setup, we give you load balancing by default, without requiring any infrastructure like load
-balancers. Load is automatically balanced between consumers **with the same name**.
+balancers. Load is automatically balanced within consumers.
 
 The load balancing works with message **Segments**. Messages are divided across a set of segments (right now 1024
-segments). When two consumers with the same name are tracking Flux Capacitor, segments are divided 50-50. Consumers only
-get messages from their assigned segments, and consumers only update positions on their assigned segments.
+segments). When a consumer consists of two trackers, segments are divided 50-50. Trackers only
+get messages from their assigned segments, and trackers only update positions on their assigned segments.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Loadbalancer.jpg "Loadbalancing")
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/segments.jpg "Loadbalancing")
 
 When you place a new node, for instance to deploy a new release, the new consumers will start tracking with none of the
 segments. Once one of the pre-existing consumers is done processing, it will continue with a smaller piece of the
@@ -249,10 +233,30 @@ Messages in order are very useful for **event-sourcing**, since we guarantee we 
 working with the latest situation. Also, we were able to create efficient local caching for aggregate in our client
 library. [For more see the chapter on event-sourcing](#event-sourcing).
 
+#### Flux Capacitor makes time travel possible
+
+You can go back in time with consumers.
+
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/greatscott.gif "Great scott!")
+
+You can reset a consumer to any previous point in time. Or when you add a new consumer, you can tell us to start
+tracking from the beginning of time.
+
+Resetting a consumer can be very useful. Suppose you are creating a new application, and created a bug that made you
+process a bunch of messages wrongly. You deploy your fix, and then simply reset your tracker to the moment you deployed
+the bug. All messages will again be processed, now with the fixed message handlers. This has often been our saving grace
+during new projects.
+
+You can wait with certain secondary features, like billing customers based on usage. You will always be able to use your
+old data.
+
 ### Single threaded
 
 Every consumer is given a single thread by default. You can add a thread to a consumer by adding ```.threads(2)```.
-Message routing within these threads are also separated based on segments.
+Message routing within these threads are also separated based on segments. In a sense, every tracker in a consumer can
+be seen as a different thread.
+
+With the s
 
 ### Message Functions
 
