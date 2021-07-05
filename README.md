@@ -153,7 +153,7 @@ other nodes. [More on that in the chapter about load balancing](#load-balancing)
 
 You can go back in time with trackers. 
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Great%20Scott.jpg "Great scott!")
+![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/greatscott.gif "Great scott!")
 
 You can reset a tracker to any previous point in time. Or when you add a new tracker, you can tell us to start tracking
 from the beginning of time.
