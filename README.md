@@ -125,23 +125,25 @@ get back whether it succeeded, for instance "Add a new order", "Delete an order"
 main body of communication between services.
 
 Direct communication, like API calls, does not scale well for rapidly-changing applications with high performance
-demands. For robustness you need to balance load across multiple service instances, you have to set up api gateways and
-load balancers to reroute these direct calls. And service registries are needed to tell you which services are available
-to be routed to. Besides this infrastructure, you also have direct exposed endpoints, which need to be secured with even
-more infrastructure, like a firewall, DDoS protection, some authentication mechanism, etc. You would have to hire some
-cloud infrastructure engineers to deal with all these concerns before being able to launch your product.
+demands. For robustness, you for instance need to balance load across multiple service instances, you have to set up api
+gateways and load balancers to reroute these direct calls. And service registries are needed to tell you which services
+are available to be routed to. Besides this infrastructure, you also have direct exposed endpoints, which need to be
+secured with even more infrastructure, like a firewall, DDoS protection, some authentication mechanism, etc. You would
+have to hire some cloud infrastructure engineers to deal with all these concerns before being able to launch your
+product.
 
-What if your could send queries and commands completely indirect, and without exposed endpoint? All the above mentioned
+What if your could send queries and commands completely indirect, and without exposed endpoint? The above mentioned
 infrastructure would not be needed. An application would simply post a query into a single place, and receive the answer
 from that place, without having any technical dependency on any of the applications that answered. It would not known
 anything about "how" the question ends up in the right place, or "how" the answer is linked back to the application. The
-only thing your application would need to know is "what" question can be answered.
+only thing your application would need to know is "what" question can be answered. Queries and commands between
+applications would be as easy as within the application.
 
 With Flux Capacitor we have created this indirect, endpointless way for your services to communicate. We provide your
 applications a single endpoint, where your services can post messages and can track messages.
 
-If you need to ask a question to another application (or sometimes itself), you will be able to achieve it with for
-example this Java code:
+If you need to ask a question to another application (or to yourself), you will be able to achieve it with for example
+this Java code:
 
 [comment]: <> (@formatter:off)
 ```java
@@ -153,8 +155,8 @@ Or if you want to post something, telling an application to do something:
 FluxCapacitor.sendCommandAndWait(new AddOrder(...));
 ```
 
-The results of your action will be returned to you, as if you called a method directly! Whether the question is direct
-or indirect, the interface for your application to "ask" remains the same.
+The results of your action will be returned to you, as if you called a method directly! An error would be thrown the same as well.
+Whether the question is director indirect, the interface for your application to "ask" remains the same.
 
 If you want to handle a request, you will create a **Handler**, which is a function that takes a request as input, and
 gives a result as output. For instance:
