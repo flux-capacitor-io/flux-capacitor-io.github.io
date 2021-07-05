@@ -126,10 +126,10 @@ We provide your applications a single endpoint, where they can post messages and
 
 If you need to ask a question to a another application, you will be able to achieve it with for example this Java code:
 
+[comment]: <> (@formatter:off)
 ```java
-List<Order> orders=FluxCapacitor.queryAndWait(new GetOrders(...));
+List<Order> orders = FluxCapacitor.queryAndWait(new GetOrders(...));
 ```
-
 Or if you want to post something, telling an application to do something:
 
 ```java
@@ -142,10 +142,10 @@ gives a result as output. For instance:
 ```java
 @HandleQuery
 List<Order> handle(GetOrders query){
-        return...
-        }
+    return ...;
+}
 ```
-
+[comment]: <> (@formatter:on)
 You still need to createthe business specific behavior your application needs to perform, but all the technicalities of
 connecting the right requester with the right responder are no longer your problem.
 
@@ -188,14 +188,13 @@ you can go back in time with trackers. Great scot!
 You can reset a tracker to any previous point in time. Or when you add a new tracker, you can tell us to start tracking
 from the beginning of time.
 
-Resetting a tracker can be very useful. 
-Suppose you are creating a new application, and created a bug that made you process a bunch of messages wrongly.
-You deploy your fix, and then simply reset your tracker to the moment you deployed the bug. 
-All messages will again be processed, now with the fixed message handlers. 
-This has often been our saving grace during new projects.
+Resetting a tracker can be very useful. Suppose you are creating a new application, and created a bug that made you
+process a bunch of messages wrongly. You deploy your fix, and then simply reset your tracker to the moment you deployed
+the bug. All messages will again be processed, now with the fixed message handlers. This has often been our saving grace
+during new projects.
 
-You can wait with certain secondary features, like billing customers based on usage. You will
-always be able to use your old data.
+You can wait with certain secondary features, like billing customers based on usage. You will always be able to use your
+old data.
 
 ### 1.3 Consumers
 
@@ -239,7 +238,7 @@ class Config {
                         .messageType(QUERY)
                         .name(...)
                         .handlerFilter(h -> h.getClass().getPackage().getName()
-                            .startsWith(...)).build());
+                            .startsWith("com.example")).build());
     }
 }
 ```
