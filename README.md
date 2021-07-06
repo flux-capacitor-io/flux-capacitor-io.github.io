@@ -92,6 +92,11 @@ registry. Besides having all this infrastructure, you'll also have directly expo
 with even more infrastructure, like a firewall and DDoS protections. You will need a dedicated team of cloud engineers
 to deal with all these concerns before you're even ready to launch your product.
 
+<p align="center">
+  <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/oldworld.jpg"><br>
+  <i>Typical microservice landscape. Source: https://javatechonline.com/microservices-in-java</i><br>
+</p>
+
 This additional infrastructure is the result of the fact that queries and commands are being **pushed** to your
 services. What if we would turn this around? What if your services would **pull** in their queries and commands from a
 central message broker and handle them at their own pace? This simple change would render all the mentioned
@@ -164,7 +169,10 @@ The process of sending a query and getting back the result actually involves two
 and one that processes results (running in the application that sent the query). Below is an image that illustrates the
 process.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Tracking.jpg "Basics")
+<p align="center">
+  <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Tracking.jpg"><br>
+  <i>How a service can query another using tracking.</i><br>
+</p>
 
 With tracking, it is not possible to overwhelm your application with too many requests because your trackers decide how
 many messages they consume (i.e., trackers can apply backpressure). This way your service cannot fall victim to e.g., a
@@ -203,7 +211,10 @@ really belong together, before you even move them to a separate application. Whe
 multiple services (often a question of much headache with microservices) is a question you can very easily postpone
 until you know for sure.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/moveconsumers.jpg "Consumers can be moved freely")
+<p align="center">
+  <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/moveconsumers.jpg"><br>
+  <i>Consumers can be split into separate applications without changing the way they communicate</i><br>
+</p>
 
 Say you have a shop application, with orders and deliveries, and you need to integrate with a delivery provider like
 UPS. You don't want you core code influenced by this integration, but you also don't want to split up your git repo
@@ -249,7 +260,10 @@ What's more, messages are distributed across trackers predictably. That is, each
 are divided 50-50. Trackers only get messages from their assigned segments, and trackers only update their log positions
 for the segments to which they have been assigned.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/segments.jpg "Loadbalancing")
+<p align="center">
+  <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/segments.jpg"><br>
+  <i>Each tracker within a consumer is assigned messages from segments equally.</i><br>
+</p>
 
 When you add additional trackers (usually during deployment of your application), the trackers will take over segments
 of existing trackers (once they have finished processing their current batch). Naturally, Flux Capacitor takes care of
@@ -276,7 +290,9 @@ order.
 
 For fans of 'Back to the Future' it should come as no surprise that Flux Capacitor makes time travel possible.
 
-![alt text](https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/greatscott.gif "Great scott!")
+<p align="center">
+  <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/greatscott.gif">
+</p>
 
 As we retain messages for a long time, you can reset a consumer to any point in time (even a time in the future), or
 instruct new consumers to start tracking from the beginning of the log.
