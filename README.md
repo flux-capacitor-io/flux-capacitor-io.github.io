@@ -94,7 +94,7 @@ to deal with all these concerns before you're even ready to launch your product.
 
 <p align="center">
   <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/oldworld.png"><br>
-  <i>Typical microservice landscape. Source: https://javatechonline.com/microservices-in-java</i><br>
+  <i>Typical microservice infrastructure. Source: <a href="https://javatechonline.com/microservices-in-java">https://javatechonline.com/microservices-in-java</a></i><br>
 </p>
 
 This additional infrastructure is the result of the fact that queries and commands are being **pushed** to your
