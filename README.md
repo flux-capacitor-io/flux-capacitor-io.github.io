@@ -13,7 +13,7 @@
         + [Tracking](#tracking)
         + [Time travel](#time-travel)
         + [Consumers](#consumers)
-        + [High availability and load balancing](#high-availability-and-load-balancing)  
+        + [High availability and load balancing](#high-availability-and-load-balancing)
         + [Single threaded by design](#single-threaded-by-design)
         + [Message Functions](#message-functions)
             - [Queries](#queries)
@@ -36,18 +36,18 @@ Building software is great. You can literally create something out of nothing an
 Some ideas can be realised very quickly too. If your idea needs a website and basic webshop, you could be up and running
 in a day. But if your needs are a little more demanding, the time required to launch a new product, feature or even bug
 fix tends to be significant. Most of that time is not spent on problems unique to your company. In fact, most companies
-struggle with the exact same technical problems.
+we developed for, struggle with the exact same technical problems.
 
-We believe it doesn't have to be this way. At Flux Capacitor we take on some of the biggest challenges plaguing
-architects and developers today so you don't have to. This way, you can focus on the actual challenges in your domain
-and launch your idea in a month instead of a year. We believe in solving problems at their roots, not by remedying their
-symptoms.
+We don't believe it has to be this way. Many of these technical problems can be solved much better by a dedicated
+service maintained outside your company. This way, you can focus on the actual challenges in your domain and build
+significantly faster and better.
 
 # Messaging as a Service
 
-Our biggest objective is to make it easy, fast and reliable for your services to communicate with each other and the
-outside world. We don't want you to worry about building the next microservice platform like so many companies have
-before you, just so you can launch your next big thing.
+One of the biggest problem areas in the microservice era, is service to service communication. Our objective is to make
+it easy, fast and reliable for your services to message each other and the outside world. We don't want you to worry
+about building the next microservice platform like so many companies have before you, just so you can launch your next
+big thing.
 
 We've developed a specialized service that enables highly performant, reliable messaging between applications. It makes
 it a breeze to launch new services. Once a service is connected to Flux Capacitor it can talk to any other connected
@@ -59,18 +59,19 @@ a second instance; Flux Capacitor will automatically balance the request load.
 
 Data between client applications and Flux Capacitor is communicated over websockets. The service has a variety of
 websocket endpoints, serving different needs. If you connect from a Java application you should include our Java client
-as a dependency. By passing the URL of the Flux Capacitor service you want to connect with, the Java client will
-automatically set up and maintain all ws connections with the service.
+as a dependency. By passing the URL of the Flux Capacitor service you want to connect with, the client will
+automatically set up and maintain all web socket connections to the service.
 
 Much of the data sent to and from Flux Capacitor is in the form of messages. A message consists of a serialized payload,
-some client metadata (containing eg the user that caused the message), and some message headers used by Flux Capacitor
-for message routing.
+some client metadata (containing e.g., information about the customer that caused the message), and some message headers
+used by Flux Capacitor for message routing.
 
 Data sent to and from Flux Capacitor is often batched and compressed aggressively for highest throughput. This way Flux
 Capacitor can store and pass along messages at rates of **hundreds of thousands to a few million messages per second**.
+
 Messages only get batched if it doesn't come at the cost of latency though. Once a message is published we aim to get it
 in the hands of willing consumers as fast as possible. The latency between the time a message gets produced and consumed
-is typically in the order of a few milliseconds depending on the backlog of that consumer.
+is typically **in the order of a few milliseconds** depending on the backlog of that consumer.
 
 # Core concepts
 
@@ -573,6 +574,6 @@ class BankAccountTest {
 }
 ```
 
-Of course, we also made it easy for you to load a test version of Flux Capacitor via docker. That way you can test
-your entire microservice setup in one go. You can find this fully functional test server 
+Of course, we also made it easy for you to load a test version of Flux Capacitor via docker. That way you can test your
+entire microservice setup in one go. You can find this fully functional test server
 on [Docker Hub](https://hub.docker.com/repository/docker/fluxcapacitorio/flux-capacitor-test).
