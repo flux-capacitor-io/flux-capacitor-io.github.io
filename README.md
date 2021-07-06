@@ -451,6 +451,7 @@ also add the event to the *global* event log, so any event consumers will also g
 How does the Flux Capacitor client know how to apply the OrderShipped event on the Order? Also this part is very easy:
 
 ```java
+
 @Aggregate
 class Order {
     String orderId;
@@ -528,7 +529,7 @@ class OrderFeedbackHandler {
     @HandleEvent
     void handle(ShipOrder event) {
         FluxCapacitor.scheduler().schedule("OrderFeedback-" + event.getOrderId(),
-                                           Duration.ofDays(2), new AskForFeedback(...));
+                Duration.ofDays(2), new AskForFeedback(...));
     }
 
     @HandleSchedule
@@ -557,16 +558,18 @@ isolated unit tests running against mocks.
 
 In practice that means that the functional behavior of your entire application is often not being tested.
 
-<br>
 <p align="center">
   <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/assets/passing-unit-tests.jpg"> 
 <i><a href="https://www.reddit.com/r/ProgrammerHumor/comments/5rh6oa/hits_too_close_to_home/">Source</a></i><br>
 
 </p>
-<br>
 
-Any code changes will also often impact your unit tests, which can go from green to red, even though your application
-still behaves the same as before.
+Unit tests are inferior to behavior tests. Unit tests are expensive to maintain and make your application inflexible.
+Most times when unit tests fail there was no actual change in behavior, but some technical change. A piece of code might
+have moved from one component to the other, and now both unit tests of these components are failing. The bigger the
+change, the more difficult it is to change unit tests. When you only use behavior tests, with actual customer behavior
+as input and output, your tests will always be green, as long as you did not change any behavior. You might search a bit
+longer to find the responsible component, but it scales much better.
 
 With Flux Capacitor we support full behavior tests that run as fast as any unit test so you don't have any of these
 problems. We supply an easy to use given-when-then test framework. Here's an example from
