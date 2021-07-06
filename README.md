@@ -451,7 +451,6 @@ also add the event to the *global* event log, so any event consumers will also g
 How does the Flux Capacitor client know how to apply the OrderShipped event on the Order? Also this part is very easy:
 
 ```java
-
 @Aggregate
 class Order {
     String orderId;
@@ -492,6 +491,7 @@ Service are not modified.
 To mark a change in the revision of a message payload simply annotate its class:
 
 ```java
+
 @Revision(1)
 class UserCreated {
     String userId; //renamed from id
@@ -527,8 +527,8 @@ shipped:
 class OrderFeedbackHandler {
     @HandleEvent
     void handle(ShipOrder event) {
-        FluxCapacitor.scheduler().schedule("OrderFeedback-" + event.getOrderId(), Duration.ofDays(2),
-                new AskForFeedback(...));
+        FluxCapacitor.scheduler().schedule("OrderFeedback-" + event.getOrderId(),
+                                           Duration.ofDays(2), new AskForFeedback(...));
     }
 
     @HandleSchedule
