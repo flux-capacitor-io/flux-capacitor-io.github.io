@@ -492,7 +492,6 @@ Service are not modified.
 To mark a change in the revision of a message payload simply annotate its class:
 
 ```java
-
 @Revision(1)
 class UserCreated {
     String userId; //renamed from id
@@ -525,8 +524,6 @@ Here's an example of a handler in Java that asks a customer if they are satisfie
 shipped:
 
 ```java
-import java.time.Duration;
-
 class OrderFeedbackHandler {
     @HandleEvent
     void handle(ShipOrder event) {
