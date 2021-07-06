@@ -2,33 +2,6 @@
     <img src="https://flux-capacitor.io/assets/brand/flux-capacitor-white.svg" alt="Flux Capacitor logo" title="Flux Capacitor" align="right" height="60" />
 </a>
 
-# Table of contents
-
-- [Flux Capacitor](#flux-capacitor)
-- [Messaging as a Service](#messaging-as-a-service)
-- [Integrating with Flux Capacitor](#integrating-with-flux-capacitor)
-- [Core concepts](#core-concepts)
-    * [Message routing](#message-routing)
-        + [Commands and Queries](#commands-and-queries)
-        + [Tracking](#tracking)
-        + [Time travel](#time-travel)
-        + [Consumers](#consumers)
-        + [High availability and load balancing](#high-availability-and-load-balancing)
-        + [Single threaded by design](#single-threaded-by-design)
-        + [Message Functions](#message-functions)
-            - [Queries](#queries)
-            - [Commands](#commands)
-            - [Events](#events)
-            - [Results](#results)
-            - [Errors](#errors)
-            - [Metrics](#metrics)
-            - [Schedules](#schedules)
-    * [Event sourcing](#event-sourcing)
-        + [Event sourcing in Flux Capacitor](#event-sourcing-in-flux-capacitor)
-        + [Upcasting](#upcasting)
-    * [Scheduling messages](#scheduling-messages)
-    * [Full behavior testing](#full-behavior-testing)
-
 # Flux Capacitor
 
 Building software is great. You can literally create something out of nothing and change the world.
@@ -75,6 +48,27 @@ is typically **in the order of a few milliseconds** depending on the backlog of 
 
 # Core concepts
 
+- [Message routing](#message-routing)
+    * [Commands and Queries](#commands-and-queries)
+    * [Tracking](#tracking)
+    * [Time travel](#time-travel)
+    * [Consumers](#consumers)
+    * [High availability and load balancing](#high-availability-and-load-balancing)
+    * [Single threaded by design](#single-threaded-by-design)
+    * [Message Functions](#message-functions)
+        + [Queries](#queries)
+        + [Commands](#commands)
+        + [Events](#events)
+        + [Results](#results)
+        + [Errors](#errors)
+        + [Metrics](#metrics)
+        + [Schedules](#schedules)
+- [Event sourcing](#event-sourcing)
+    * [Event sourcing in Flux Capacitor](#event-sourcing-in-flux-capacitor)
+    * [Upcasting](#upcasting)
+- [Scheduling messages](#scheduling-messages)
+- [Full behavior testing](#full-behavior-testing)
+
 ## Message routing
 
 ### Commands and Queries
@@ -92,10 +86,12 @@ registry. Besides having all this infrastructure, you'll also have directly expo
 with even more infrastructure, like a firewall and DDoS protections. You will need a dedicated team of cloud engineers
 to deal with all these concerns before you're even ready to launch your product.
 
+<br>
 <p align="center">
   <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/oldworld.png"><br>
-  <i>Typical microservice infrastructure. Source: <a href="https://javatechonline.com/microservices-in-java">https://javatechonline.com/microservices-in-java</a></i><br>
+  <i>Typical microservice infrastructure. <a href="https://javatechonline.com/microservices-in-java">Source</a></i><br>
 </p>
+<br>
 
 This additional infrastructure is the result of the fact that queries and commands are being **pushed** to your
 services. What if we would turn this around? What if your services would **pull** in their queries and commands from a
@@ -169,10 +165,12 @@ The process of sending a query and getting back the result actually involves two
 and one that processes results (running in the application that sent the query). Below is an image that illustrates the
 process.
 
+<br>
 <p align="center">
   <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/Tracking.jpg"><br>
   <i>How a service can query another using tracking.</i><br>
 </p>
+<br>
 
 With tracking, it is not possible to overwhelm your application with too many requests because your trackers decide how
 many messages they consume (i.e., trackers can apply backpressure). This way your service cannot fall victim to e.g., a
@@ -201,8 +199,7 @@ distribute all messages correctly.
 
 Trackers pass the messages they receive on to their handlers. Trackers belonging to the same consumer can be seen as
 separate **Threads** of the consumer. The main function of running multiple trackers per consumer
-(i.e., running multi-threaded) is load balancing and
-redundancy. [More on how we load balance with consumers here](#load-balancing)
+(i.e., running multi-threaded) is load balancing and redundancy.
 
 In most cases you'll configure multiple consumers per application. Because consumers are isolated from other consumers
 it does not really matter if they live together in the same application or in separately hosted applications; their
@@ -211,10 +208,12 @@ really belong together, before you even move them to a separate application. Whe
 multiple services (often a question of much headache with microservices) is a question you can very easily postpone
 until you know for sure.
 
+<br>
 <p align="center">
   <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/moveconsumers.jpg"><br>
   <i>Consumers can be split into separate applications without changing the way they communicate</i><br>
 </p>
+<br>
 
 Say you have a shop application, with orders and deliveries, and you need to integrate with a delivery provider like
 UPS. You don't want you core code influenced by this integration, but you also don't want to split up your git repo
@@ -238,10 +237,11 @@ class Config {
     @Autowired
     void configure(FluxCapacitorBuilder builder) {
         builder.addConsumerConfiguration(ConsumerConfiguration.builder()
-                        .name("OrderQueryConsumer")
-                        .messageType(QUERY).threads(2)
-                        .handlerFilter(h -> h.getClass().getPackage().getName().startsWith("com.example.orders"))
-                        .build());
+            .name("OrderQueryConsumer")
+            .messageType(QUERY).threads(2)
+            .handlerFilter(h -> h.getClass().getPackage().getName()
+                .startsWith("com.example.orders"))
+            .build());
     }
 }
 ```
@@ -260,10 +260,12 @@ What's more, messages are distributed across trackers predictably. That is, each
 are divided 50-50. Trackers only get messages from their assigned segments, and trackers only update their log positions
 for the segments to which they have been assigned.
 
+<br>
 <p align="center">
   <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/segments.jpg"><br>
   <i>Each tracker within a consumer is assigned messages from segments equally.</i><br>
 </p>
+<br>
 
 When you add additional trackers (usually during deployment of your application), the trackers will take over segments
 of existing trackers (once they have finished processing their current batch). Naturally, Flux Capacitor takes care of
@@ -529,7 +531,7 @@ class OrderFeedbackHandler {
     @HandleEvent
     void handle(ShipOrder event) {
         FluxCapacitor.scheduler().schedule("OrderFeedback-" + event.getOrderId(), Duration.ofDays(2),
-                                           new AskForFeedback(...));
+                new AskForFeedback(...));
     }
 
     @HandleSchedule
@@ -558,7 +560,13 @@ isolated unit tests running against mocks.
 
 In practice that means that the functional behavior of your entire application is often not being tested.
 
-![alt text](/assets/passing-unit-tests.jpg "Passing unit tests")
+<br>
+<p align="center">
+  <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/assets/passing-unit-tests.jpg"> 
+<i><a href="https://www.reddit.com/r/ProgrammerHumor/comments/5rh6oa/hits_too_close_to_home/">Source</a></i><br>
+
+</p>
+<br>
 
 Any code changes will also often impact your unit tests, which can go from green to red, even though your application
 still behaves the same as before.
@@ -569,12 +577,7 @@ our [banking sample project](https://github.com/flux-capacitor-io/flux-examples-
 
 ```java
 class BankAccountTest {
-    private static final CreateAccount createAccount = CreateAccount.builder().accountId("a").userId("user1").build();
-    private static final CreateAccount createAnotherAccount =
-            CreateAccount.builder().accountId("b").userId("user2").build();
-    private static final TransferMoney transferMoney = new TransferMoney("a", "b", BigDecimal.TEN);
-    private final TestFixture testFixture = TestFixture.create(new AccountCommandHandler(), new TransferEventHandler(),
-                                                               new AccountLifecycleHandler());
+    ...
 
     @Test
     void testCreateAccountTwiceNotAllowed() {
@@ -585,7 +588,8 @@ class BankAccountTest {
     @Test
     void testTransferNotAllowedWithInsufficientFunds() {
         testFixture.givenCommands(createAccount, createAnotherAccount)
-                .whenCommand(transferMoney).expectException(IllegalCommandException.class).expectNoEvents();
+                .whenCommand(transferMoney)
+                .expectException(IllegalCommandException.class).expectNoEvents();
     }
 }
 ```
