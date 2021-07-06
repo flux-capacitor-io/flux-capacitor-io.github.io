@@ -93,7 +93,7 @@ with even more infrastructure, like a firewall and DDoS protections. You will ne
 to deal with all these concerns before you're even ready to launch your product.
 
 <p align="center">
-  <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/oldworld.jpg"><br>
+  <img src="https://github.com/flux-capacitor-io/flux-capacitor-io.github.io/raw/master/dist/img/oldworld.png"><br>
   <i>Typical microservice landscape. Source: https://javatechonline.com/microservices-in-java</i><br>
 </p>
 
