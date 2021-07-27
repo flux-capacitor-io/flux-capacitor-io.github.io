@@ -1,6 +1,4 @@
-<a href="flux-capacitor.io">
-    <img src="https://flux-capacitor.io/assets/brand/flux-capacitor-white.svg" alt="Flux Capacitor logo" title="Flux Capacitor" align="right" height="60" />
-</a>
+<img src="https://flux-capacitor.io/assets/brand/flux-capacitor-white.svg" alt="Flux Capacitor logo" title="Flux Capacitor" align="right" height="60" />
 
 # Flux Capacitor
 
@@ -597,3 +595,39 @@ class BankAccountTest {
 Of course, we also made it easy for you to load a test version of Flux Capacitor via docker. That way you can test your
 entire microservice setup in one go. You can find this fully functional test server
 on [Docker Hub](https://hub.docker.com/repository/docker/fluxcapacitorio/flux-capacitor-test).
+
+# Performance metrics
+
+## Benchmark tests
+
+
+
+* For average 100 byte compressable messages, 5 million messages per second
+
+
+## Case Portbase
+
+In the domain with the highest throughput, at peak usage we process in 1 hour:
+* 1,5k/sec, of which most are metrics
+
+70 consumers are running, with 1 or 2 trackers. 50 of these are external companies tracking the event log.
+
+Infrastructure components are:
+* Flux setup:
+    * 1x Flux Capacitor service node
+        * 2 GHz cpu, 50% used at peak usage
+        * 16 GB memory
+        * at redeployment, 2nd node is started and 1st node fails-over to 2nd.
+    * 1x Database node
+        * 4 cores, 2,5 GHz
+        * 16 GB memory
+* Portbase setup
+    * 2x Portbase core nodes
+        * 2 GHz cpu
+        * 16 GB memory
+    * 2x Portbase web nodes
+        * 2 GHz cpu
+        * 16 GB memory
+    * 1x Portbase audittrail node
+        * 1 GHz cpu
+        * 2 GB memory
