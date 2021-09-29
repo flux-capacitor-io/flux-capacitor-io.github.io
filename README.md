@@ -1,4 +1,4 @@
-<a href="https://github.com/flux-capacitor-io/flux-capacitor-client">
+<a href="https://github.com/flux-capacitor-io" target="_blank">
     <img src="https://flux-capacitor.io/assets/brand/flux-capacitor-white.svg" alt="Flux Capacitor logo" title="Flux Capacitor" align="right" height="60" />
 </a>
 
@@ -597,3 +597,10 @@ class BankAccountTest {
 Of course, we also made it easy for you to load a test version of Flux Capacitor via docker. That way you can test your
 entire microservice setup in one go. You can find this fully functional test server
 on [Docker Hub](https://hub.docker.com/repository/docker/fluxcapacitorio/flux-capacitor-test).
+
+----
+
+<h4 style="text-align: center">
+    <a href="https://github.com/flux-capacitor-io" target="_blank" style="margin-right: 1rem">Github</a> 
+    <a href="mailto:info@flux-capacitor.io">Contact us</a>
+</h4>
